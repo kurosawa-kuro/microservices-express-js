@@ -4,6 +4,37 @@
 
 本手順書では、KuroBankマイクロサービスプロジェクトにKeycloakとPostgreSQLを使用した認証認可システムを導入する方法を説明します。
 
+## 🔒 セキュリティ機能
+
+このシステムには以下の高度なセキュリティ機能が含まれています：
+
+### 1. JWTトークンキャッシング
+- **目的**: JWT検証のパフォーマンス向上
+- **実装**: メモリ内キャッシュ（node-cache）を使用
+- **TTL**: トークンの有効期限または最大300秒
+- **キャッシュキー**: トークンのSHA256ハッシュ（セキュリティ確保）
+
+### 2. レート制限
+- **認証エンドポイント**: 10リクエスト/分、ブロック時間5分
+- **一般エンドポイント**: 100リクエスト/分、ブロック時間1分
+- **実装**: `rate-limiter-flexible`パッケージ使用
+- **設定**: 環境変数で調整可能
+
+### 3. 監査ログ
+- **ログファイル**: `security.log`（専用セキュリティログ）
+- **記録イベント**: 
+  - 認証成功/失敗
+  - 認可失敗
+  - レート制限違反
+  - トークンリフレッシュ
+- **構造化ログ**: JSON形式、相関ID付き
+
+### 4. トークンリフレッシュ機能
+- **エンドポイント**: `POST /auth/refresh`
+- **機能**: Keycloakリフレッシュトークンによる自動更新
+- **検証**: リフレッシュトークンの有効性確認
+- **取り消し**: `POST /auth/revoke`でトークン無効化
+
 ## アーキテクチャ概要
 
 - **Keycloak**: OAuth 2.0/OpenID Connect認証サーバー
@@ -178,9 +209,59 @@ Gateway Serviceで使用される主要な環境変数：
 - `/kurobank/cards/**`: `bank-customer`, `bank-employee`, `bank-admin`
 - `/kurobank/loans/**`: `bank-customer`, `bank-employee`, `bank-admin`
 
-## 5. トラブルシューティング
+## 5. セキュリティ機能の使用方法
 
-### 5.1 よくある問題
+### 5.1 トークンリフレッシュ
+
+```bash
+# リフレッシュトークンを使用してアクセストークンを更新
+curl -X POST "http://localhost:8072/auth/refresh" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "YOUR_REFRESH_TOKEN"
+  }'
+```
+
+### 5.2 トークン取り消し
+
+```bash
+# リフレッシュトークンを無効化
+curl -X POST "http://localhost:8072/auth/revoke" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "YOUR_REFRESH_TOKEN"
+  }'
+```
+
+### 5.3 監査ログの確認
+
+```bash
+# セキュリティイベントログの確認
+tail -f security.log | grep "securityEvent"
+
+# 特定のイベントタイプでフィルタ
+grep "auth_failure" security.log
+grep "rate_limit_exceeded" security.log
+```
+
+### 5.4 レート制限の設定
+
+環境変数で調整可能：
+
+```yaml
+# docker-compose.yml
+environment:
+  - AUTH_RATE_LIMIT_REQUESTS=10      # 認証エンドポイント: リクエスト数/分
+  - AUTH_RATE_LIMIT_WINDOW=60        # 認証エンドポイント: 時間窓（秒）
+  - AUTH_RATE_LIMIT_BLOCK=300        # 認証エンドポイント: ブロック時間（秒）
+  - GENERAL_RATE_LIMIT_REQUESTS=100  # 一般エンドポイント: リクエスト数/分
+  - GENERAL_RATE_LIMIT_WINDOW=60     # 一般エンドポイント: 時間窓（秒）
+  - GENERAL_RATE_LIMIT_BLOCK=60      # 一般エンドポイント: ブロック時間（秒）
+```
+
+## 6. トラブルシューティング
+
+### 6.1 よくある問題
 
 1. **Keycloak起動失敗**
    ```bash
@@ -205,7 +286,20 @@ Gateway Serviceで使用される主要な環境変数：
    - ユーザーの役割割り当て確認
    - トークンの有効期限確認
 
-### 5.2 ログ確認
+4. **レート制限エラー**
+   ```bash
+   # レート制限状況の確認
+   curl -v "http://localhost:8072/kurobank/accounts"
+   # Retry-Afterヘッダーを確認
+   ```
+
+5. **トークンキャッシュ問題**
+   ```bash
+   # キャッシュ統計の確認（ログで確認）
+   grep "cache_hit\|cache_miss" combined.log
+   ```
+
+### 6.2 ログ確認
 
 ```bash
 # 全サービスのログ確認
@@ -217,7 +311,7 @@ docker-compose logs -f gateway-service
 docker-compose logs -f postgres
 ```
 
-### 5.3 デバッグ用コマンド
+### 6.3 デバッグ用コマンド
 
 ```bash
 # Keycloakヘルスチェック
@@ -230,9 +324,9 @@ curl http://localhost:8181/realms/kurobank/protocol/openid-connect/certs
 curl http://localhost:8072/actuator/health
 ```
 
-## 6. セキュリティ考慮事項
+## 7. セキュリティ考慮事項
 
-### 6.1 本番環境での設定
+### 7.1 本番環境での設定
 
 1. **強力なパスワード設定**
    ```bash
@@ -249,22 +343,22 @@ curl http://localhost:8072/actuator/health
    - PostgreSQL認証設定強化
    - データベース暗号化
 
-### 6.2 トークン設定
+### 7.2 トークン設定
 
 - アクセストークンの有効期限: 15分（推奨）
 - リフレッシュトークンの有効期限: 30日（推奨）
 - セッションタイムアウト: 30分（推奨）
 
-## 7. 参考情報
+## 8. 参考情報
 
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [JWT.io](https://jwt.io/) - JWT トークンデバッグツール
 - [JWKS Specification](https://tools.ietf.org/html/rfc7517)
 
-## 8. 付録
+## 9. 付録
 
-### 8.1 Keycloak管理タスク
+### 9.1 Keycloak管理タスク
 
 ```bash
 # Keycloakクライアント作成（Admin CLI使用）
@@ -275,7 +369,7 @@ docker exec -it keycloak /opt/keycloak/bin/kcadm.sh create clients \
   -r kurobank -s clientId=kurobank-api -s enabled=true -s serviceAccountsEnabled=true
 ```
 
-### 8.2 データベーステーブル構成
+### 9.2 データベーステーブル構成
 
 Keycloakが使用する主要なPostgreSQLテーブル：
 - `USER_ENTITY` - ユーザー情報
@@ -283,7 +377,7 @@ Keycloakが使用する主要なPostgreSQLテーブル：
 - `CLIENT` - クライアント設定
 - `USER_ROLE_MAPPING` - ユーザーロール関連付け
 
-### 8.3 JWT トークン構造例
+### 9.3 JWT トークン構造例
 
 ```json
 {

@@ -196,6 +196,13 @@ services:
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_REALM=kurobank
       - KEYCLOAK_CLIENT_ID=kurobank-gateway
+      - KEYCLOAK_CLIENT_SECRET=your-client-secret-here
+      - AUTH_RATE_LIMIT_REQUESTS=10
+      - AUTH_RATE_LIMIT_WINDOW=60
+      - AUTH_RATE_LIMIT_BLOCK=300
+      - GENERAL_RATE_LIMIT_REQUESTS=100
+      - GENERAL_RATE_LIMIT_WINDOW=60
+      - GENERAL_RATE_LIMIT_BLOCK=60
       - ACCOUNTS_SERVICE_URL=http://accounts-service:8080
       - CARDS_SERVICE_URL=http://cards-service:9000
       - LOANS_SERVICE_URL=http://loans-service:8090
@@ -209,7 +216,6 @@ services:
     volumes:
       - ./services/gateway:/app
       - ./shared:/app/shared
-      - /app/node_modules
     command: npm run dev
 
 volumes:
