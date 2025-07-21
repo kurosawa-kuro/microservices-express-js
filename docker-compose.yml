@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    healthcheck:
+      test: ["CMD", "bash", "-c", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # KuroBank Microservices
+  message-service:
+    build:
+      context: ./services/message
+      dockerfile: Dockerfile
+    container_name: message-service
+    ports:
+      - "9010:9010"
+    environment:
+      - NODE_ENV=development
+      - PORT=9010
+      - KAFKA_BROKERS=kafka:29092
+      - KAFKA_GROUP_ID=message
+      - KAFKA_TOPIC_INPUT=send-communication
+      - KAFKA_TOPIC_OUTPUT=communication-sent
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./services/message:/app
+      - ./shared:/app/shared
+      - /app/node_modules
+    command: npm run dev
+
+  cards-service:
+    build:
+      context: ./services/cards
+      dockerfile: Dockerfile
+    container_name: cards-service
+    ports:
+      - "9000:9000"
+    environment:
+      - NODE_ENV=development
+      - PORT=9000
+      - DATABASE_URL=file:./data/app.db
+      - BUILD_VERSION=1.0.0
+    volumes:
+      - ./services/cards:/app
+      - ./shared:/app/shared
+      - cards-data:/app/data
+      - /app/node_modules
+    command: npm run dev
+
+  loans-service:
+    build:
+      context: ./services/loans
+      dockerfile: Dockerfile
+    container_name: loans-service
+    ports:
+      - "8090:8090"
+    environment:
+      - NODE_ENV=development
+      - PORT=8090
+      - DATABASE_URL=file:./data/app.db
+      - BUILD_VERSION=1.0.0
+    volumes:
+      - ./services/loans:/app
+      - ./shared:/app/shared
+      - loans-data:/app/data
+      - /app/node_modules
+    command: npm run dev
+
+  accounts-service:
+    build:
+      context: ./services/accounts
+      dockerfile: Dockerfile
+    container_name: accounts-service
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - DATABASE_URL=file:./data/app.db
+      - BUILD_VERSION=1.0.0
+      - CARDS_SERVICE_URL=http://cards-service:9000
+      - LOANS_SERVICE_URL=http://loans-service:8090
+      - KAFKA_BROKERS=kafka:29092
+      - KAFKA_TOPIC_OUTPUT=send-communication
+    depends_on:
+      - cards-service
+      - loans-service
+      - kafka
+    volumes:
+      - ./services/accounts:/app
+      - ./shared:/app/shared
+      - accounts-data:/app/data
+      - /app/node_modules
+    command: npm run dev
+
+  gateway-service:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8072:8072"
+    environment:
+      - NODE_ENV=development
+      - PORT=8072
+      - JWT_SECRET=your-secret-key-here
+      - ACCOUNTS_SERVICE_URL=http://accounts-service:8080
+      - CARDS_SERVICE_URL=http://cards-service:9000
+      - LOANS_SERVICE_URL=http://loans-service:8090
+      - MESSAGE_SERVICE_URL=http://message-service:9010
+    depends_on:
+      - accounts-service
+      - cards-service
+      - loans-service
+      - message-service
+    volumes:
+      - ./services/gateway:/app
+      - ./shared:/app/shared
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  cards-data:
+  loans-data:
+  accounts-data:
+
+networks:
+  default:
+    name: kurobank-network

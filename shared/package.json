@@ -1,0 +1,11 @@
+{
+  "name": "@kurobank/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and middleware for KuroBank microservices",
+  "main": "index.js",
+  "dependencies": {
+    "uuid": "^9.0.1",
+    "zod": "^3.22.0",
+    "winston": "^3.11.0"
+  }
+}

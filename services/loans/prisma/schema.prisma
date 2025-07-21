@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Loans {
+  loanId             Int      @id @default(autoincrement()) @map("loan_id")
+  mobileNumber       String   @map("mobile_number")
+  loanNumber         String   @unique @map("loan_number")
+  loanType           String   @map("loan_type")
+  totalLoan          Int      @map("total_loan")
+  amountPaid         Int      @map("amount_paid")
+  outstandingAmount  Int      @map("outstanding_amount")
+  createdAt          DateTime @default(now()) @map("created_at")
+  createdBy          String   @map("created_by")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  updatedBy          String?  @map("updated_by")
+
+  @@map("loans")
+}
