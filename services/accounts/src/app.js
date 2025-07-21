@@ -9,6 +9,43 @@ const controllers = require('./controllers');
 
 dotenv.config();
 
+// Initialize OpenAPI Backend
+const api = new OpenAPIBackend({
+  definition: path.join(__dirname, '../../openapi.yaml'),
+  handlers: {
+    createAccount: controllers.createAccount,
+    fetchAccount: controllers.fetchAccount, 
+    updateAccount: controllers.updateAccount,
+    deleteAccount: controllers.deleteAccount,
+    fetchCustomerDetails: controllers.fetchCustomerDetails,
+    getBuildInfo: controllers.getBuildInfo,
+    getContactInfo: controllers.getContactInfo,
+    healthCheck: (req, res) => res.status(200).json({ 
+      status: 'UP', 
+      timestamp: new Date().toISOString(),
+      service: 'accounts-service'
+    }),
+    validationFail: (req, res, err) => {
+      res.status(400).json({
+        apiPath: req.path,
+        errorCode: 'VALIDATION_ERROR',
+        errorMessage: err.message,
+        errorTime: new Date().toISOString()
+      });
+    },
+    notFound: (req, res) => {
+      res.status(404).json({
+        apiPath: req.path,
+        errorCode: 'NOT_FOUND',
+        errorMessage: 'API endpoint not found',
+        errorTime: new Date().toISOString()
+      });
+    }
+  }
+});
+
+api.init();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -24,21 +61,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/api/create', controllers.createAccount);
-app.get('/api/fetch', controllers.fetchAccount);
-app.put('/api/update', controllers.updateAccount);
-app.delete('/api/delete', controllers.deleteAccount);
-app.get('/api/fetchCustomerDetails', controllers.fetchCustomerDetails);
-app.get('/api/build-info', controllers.getBuildInfo);
-app.get('/api/contact-info', controllers.getContactInfo);
-
-app.get('/actuator/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'UP', 
-    timestamp: new Date().toISOString(),
-    service: 'accounts-service'
-  });
-});
+// Use OpenAPI Backend to handle all requests
+app.use((req, res) => api.handleRequest(req, req, res));
 
 app.use(errorHandler);
 
