@@ -192,7 +192,7 @@ services/[service-name]/
 
 ### types/common/ - 共通型定義
 
-```typescript
+```javascript
 // shared/types/common/ResponseDto.ts
 export interface ResponseDto {
   statusCode: string;
@@ -218,7 +218,7 @@ export interface BaseEntity {
 
 ### middleware/ - 共通ミドルウェア
 
-```typescript
+```javascript
 // shared/middleware/correlationId.ts
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -231,7 +231,7 @@ declare global {
   }
 }
 
-export const correlationIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const correlationIdMiddleware = (req, res, next) => {
   const correlationId = req.headers['kurobank-correlation-id'] as string || uuidv4();
   req.correlationId = correlationId;
   res.setHeader('kurobank-correlation-id', correlationId);
@@ -241,7 +241,7 @@ export const correlationIdMiddleware = (req: Request, res: Response, next: NextF
 
 ### utils/ - 共通ユーティリティ
 
-```typescript
+```javascript
 // shared/utils/logger.ts
 import winston from 'winston';
 
@@ -260,7 +260,7 @@ export const logger = winston.createLogger({
 });
 ```
 
-```typescript
+```javascript
 // shared/utils/constants.ts
 export const HTTP_STATUS_CODES = {
   OK: 200,

@@ -452,44 +452,46 @@ export { router };
 
 ### 1.10 アプリケーション エントリポイント
 
-```typescript
-// src/app.ts
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { router } from './routes';
-import { errorHandler } from './middleware/errorHandler';
-import { correlationIdMiddleware } from './middleware/correlationId';
-import { requestLogger } from './middleware/requestLogger';
+```javascript
+// src/app.js
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const OpenAPIBackend = require('openapi-backend').default;
+const path = require('path');
+const { errorHandler } = require('./middleware/errorHandler');
+const { correlationIdMiddleware } = require('./middleware/correlationId');
+const controllers = require('./controllers');
 
 dotenv.config();
 
 const app = express();
-
-// ミドルウェア設定
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// カスタムミドルウェア
 app.use(correlationIdMiddleware);
-app.use(requestLogger);
 
-// ルーティング
-app.use('/api', router);
+// OpenAPIBackendインスタンス生成
+const api = new OpenAPIBackend({
+  definition: path.join(__dirname, '../openapi.yaml'),
+  handlers: controllers, // operationId: handlerFunction
+  quick: true,
+});
+
+api.init();
+
+app.use('/api', (req, res) => {
+  api.handleRequest(req, req, res);
+});
 
 // ヘルスチェック
 app.get('/actuator/health', (req, res) => {
-  res.status(200).json({
-    status: 'UP',
-    timestamp: new Date().toISOString()
-  });
+  res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
 // エラーハンドリング
 app.use(errorHandler);
 
-export default app;
+module.exports = app;
 ```
 
 ```typescript

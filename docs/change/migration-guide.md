@@ -160,31 +160,46 @@ mkdir -p docs/api
 
 ### 5.1 Express アプリケーション基本構造
 
-```typescript
-// src/app.ts
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { errorHandler } from './middleware/errorHandler';
-import { correlationId } from './middleware/correlationId';
-import { routes } from './routes';
+```javascript
+// src/app.js
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const OpenAPIBackend = require('openapi-backend').default;
+const path = require('path');
+const { errorHandler } = require('./middleware/errorHandler');
+const { correlationId } = require('./middleware/correlationId');
+const controllers = require('./controllers');
 
 dotenv.config();
 
 const app = express();
-
-// ミドルウェア
 app.use(cors());
 app.use(express.json());
 app.use(correlationId);
 
-// ルーティング
-app.use('/api', routes);
+// OpenAPIBackendインスタンス生成
+const api = new OpenAPIBackend({
+  definition: path.join(__dirname, '../openapi.yaml'),
+  handlers: controllers, // operationId: handlerFunction
+  quick: true,
+});
+
+api.init();
+
+app.use('/api', (req, res) => {
+  api.handleRequest(req, req, res);
+});
+
+// ヘルスチェック
+app.get('/actuator/health', (req, res) => {
+  res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
+});
 
 // エラーハンドリング
 app.use(errorHandler);
 
-export default app;
+module.exports = app;
 ```
 
 ### 5.2 相関ID ミドルウェア
@@ -305,42 +320,25 @@ services/cards/
 
 #### Controller実装
 
-```typescript
-// src/controllers/cardsController.ts
-import { Request, Response } from 'express';
-import { CardsService } from '../services/cardsService';
-import { CardsDto } from '../types/CardsDto';
-
-export class CardsController {
-  constructor(private cardsService: CardsService) {}
-
-  createCard = async (req: Request, res: Response) => {
-    try {
-      const { mobileNumber } = req.query;
-      await this.cardsService.createCard(mobileNumber as string);
-      
-      res.status(201).json({
-        statusCode: '201',
-        statusMsg: 'Card created successfully'
-      });
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  fetchCard = async (req: Request, res: Response) => {
-    try {
-      const { mobileNumber } = req.query;
-      const card = await this.cardsService.fetchCard(mobileNumber as string);
-      
-      res.status(200).json(card);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // 他のメソッドも同様に実装...
-}
+```javascript
+// src/controllers/cardsController.js
+module.exports = {
+  createCard: async (c, req, res) => {
+    // ...ビジネスロジック...
+    res.status(201).json({ statusCode: '201', statusMsg: 'Card created successfully' });
+  },
+  fetchCard: async (c, req, res) => {
+    // ...ビジネスロジック...
+    res.status(200).json({ /* ... */ });
+  },
+  // ...他operationId...
+  notFound: (c, req, res) => {
+    res.status(404).json({ error: 'Not found' });
+  },
+  validationFail: (c, req, res) => {
+    res.status(400).json({ error: 'Validation error' });
+  },
+};
 ```
 
 #### Service層実装
