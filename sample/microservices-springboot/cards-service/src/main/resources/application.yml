@@ -1,0 +1,68 @@
+server:
+  port: 9000
+spring:
+  application:
+    name: "cards"
+  profiles:
+    active: "prod"
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:sqlite:/data/app.db
+    driverClassName: org.sqlite.JDBC
+    username: ''
+    password: ''
+  jpa:
+    database-platform: com.kurobytes.common.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    shutdown:
+      enabled: false
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+
+info:
+  app:
+    name: "cards"
+    description: "Kuro Bank Cards Application"
+    version: "1.0.0"
+
+logging:
+  level:
+    com:
+      kurobytes:
+        cards: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

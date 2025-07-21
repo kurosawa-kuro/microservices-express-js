@@ -1,0 +1,30 @@
+{
+  "name": "vue-express-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "node prisma/seed.js",
+    "prisma:generate": "node generate-prisma.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.0",
+    "openapi-backend": "^5.10.6",
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "jest": "^30.0.4",
+    "prisma": "^5.7.0",
+    "supertest": "^7.1.3"
+  }
+}
