@@ -11,7 +11,7 @@ dotenv.config();
 
 // Initialize OpenAPI Backend
 const api = new OpenAPIBackend({
-  definition: path.join(__dirname, '../../openapi.yaml'),
+  definition: path.join(__dirname, '../openapi.yaml'),
   handlers: {
     createAccount: controllers.createAccount,
     fetchAccount: controllers.fetchAccount, 
@@ -29,7 +29,7 @@ const api = new OpenAPIBackend({
       res.status(400).json({
         apiPath: req.path,
         errorCode: 'VALIDATION_ERROR',
-        errorMessage: err.message,
+        errorMessage: err?.message || 'Validation failed',
         errorTime: new Date().toISOString()
       });
     },
@@ -62,7 +62,7 @@ app.use((req, res, next) => {
 });
 
 // Use OpenAPI Backend to handle all requests
-app.use((req, res) => api.handleRequest(req, req, res));
+app.use((req, res) => api.handleRequest(req, res));
 
 app.use(errorHandler);
 
