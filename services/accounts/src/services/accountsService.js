@@ -6,7 +6,7 @@ const logger = require('../../../../shared/utils/logger');
 class AccountsService {
   constructor() {
     this.prisma = new PrismaClient();
-    this.eventPublisher = new EventPublisherService();
+    this.eventPublisher = process.env.NODE_ENV === 'test' ? null : new EventPublisherService();
   }
 
   async createAccount(customerDto) {
@@ -47,12 +47,14 @@ class AccountsService {
         return { customer, account };
       });
 
-      await this.eventPublisher.publishAccountCreatedEvent({
-        accountNumber: result.account.accountNumber,
-        name: result.customer.name,
-        email: result.customer.email,
-        mobileNumber: result.customer.mobileNumber
-      });
+      if (this.eventPublisher) {
+        await this.eventPublisher.publishAccountCreatedEvent({
+          accountNumber: result.account.accountNumber,
+          name: result.customer.name,
+          email: result.customer.email,
+          mobileNumber: result.customer.mobileNumber
+        });
+      }
 
       logger.info(`Account created successfully for mobile number: ${validatedData.mobileNumber}`);
       return result;

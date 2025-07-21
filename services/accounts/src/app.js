@@ -20,12 +20,12 @@ const api = new OpenAPIBackend({
     fetchCustomerDetails: controllers.fetchCustomerDetails,
     getBuildInfo: controllers.getBuildInfo,
     getContactInfo: controllers.getContactInfo,
-    healthCheck: (req, res) => res.status(200).json({ 
+    healthCheck: (c, req, res) => res.status(200).json({ 
       status: 'UP', 
       timestamp: new Date().toISOString(),
       service: 'accounts-service'
     }),
-    validationFail: (req, res, err) => {
+    validationFail: (c, req, res, err) => {
       res.status(400).json({
         apiPath: req.path,
         errorCode: 'VALIDATION_ERROR',
@@ -62,7 +62,7 @@ app.use((req, res, next) => {
 });
 
 // Use OpenAPI Backend to handle all requests
-app.use((req, res) => api.handleRequest(req, res));
+app.use((req, res) => api.handleRequest(req, req, res));
 
 app.use(errorHandler);
 

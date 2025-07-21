@@ -7,9 +7,9 @@ const accountsService = new AccountsService();
 const customersService = new CustomersService();
 
 module.exports = {
-  createAccount: async (req, res) => {
+  createAccount: async (c, req, res) => {
     try {
-      const customerDto = req.body;
+      const customerDto = c.request.requestBody;
       await accountsService.createAccount(customerDto);
       return res.status(201).json({
         statusCode: ACCOUNTS_CONSTANTS.STATUS_201,
@@ -26,9 +26,9 @@ module.exports = {
     }
   },
 
-  fetchAccount: async (req, res) => {
+  fetchAccount: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       logger.debug('fetchAccount method start');
       const customerDto = await accountsService.fetchAccount(mobileNumber);
       logger.debug('fetchAccount method end');
@@ -44,9 +44,9 @@ module.exports = {
     }
   },
 
-  updateAccount: async (req, res) => {
+  updateAccount: async (c, req, res) => {
     try {
-      const customerDto = req.body;
+      const customerDto = c.request.requestBody;
       const isUpdated = await accountsService.updateAccount(customerDto);
       if (isUpdated) {
         return res.status(200).json({
@@ -70,9 +70,9 @@ module.exports = {
     }
   },
 
-  deleteAccount: async (req, res) => {
+  deleteAccount: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       const isDeleted = await accountsService.deleteAccount(mobileNumber);
       if (isDeleted) {
         return res.status(200).json({
@@ -96,10 +96,10 @@ module.exports = {
     }
   },
 
-  fetchCustomerDetails: async (req, res) => {
+  fetchCustomerDetails: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
-      const correlationId = req.headers['kurobank-correlation-id'];
+      const { mobileNumber } = c.request.query;
+      const correlationId = c.request.headers['kurobank-correlation-id'];
       logger.debug('fetchCustomerDetails method start');
       const customerDetailsDto = await customersService.fetchCustomerDetails(mobileNumber, correlationId);
       logger.debug('fetchCustomerDetails method end');
@@ -115,14 +115,14 @@ module.exports = {
     }
   },
 
-  getBuildInfo: async (req, res) => {
+  getBuildInfo: async (c, req, res) => {
     return res.status(200).json({
       version: process.env.BUILD_VERSION || '1.0.0',
       timestamp: new Date().toISOString()
     });
   },
 
-  getContactInfo: async (req, res) => {
+  getContactInfo: async (c, req, res) => {
     return res.status(200).json({
       name: 'Kuro Bytes - Accounts Service',
       email: 'support@kurobytes.com',

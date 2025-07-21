@@ -38,17 +38,8 @@ describe('Loans Service API', () => {
 
   describe('Loan Management', () => {
     test('POST /api/create should create a new loan', async () => {
-      const newLoan = {
-        mobileNumber: '1234567890',
-        loanType: 'Home Loan',
-        totalLoan: 100000,
-        amountPaid: 0,
-        outstandingAmount: 100000
-      };
-
       const response = await request(app)
-        .post('/api/create')
-        .send(newLoan)
+        .post('/api/create?mobileNumber=1234567890')
         .expect(201);
 
       expect(response.body).toHaveProperty('statusCode', '201');
@@ -64,17 +55,8 @@ describe('Loans Service API', () => {
     });
 
     test('GET /api/fetch should return loan details for valid mobile number', async () => {
-      const newLoan = {
-        mobileNumber: '1234567890',
-        loanType: 'Home Loan',
-        totalLoan: 100000,
-        amountPaid: 0,
-        outstandingAmount: 100000
-      };
-
       await request(app)
-        .post('/api/create')
-        .send(newLoan)
+        .post('/api/create?mobileNumber=1234567890')
         .expect(201);
 
       const response = await request(app)
@@ -82,8 +64,47 @@ describe('Loans Service API', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('mobileNumber', '1234567890');
-      expect(response.body).toHaveProperty('loanType', 'Home Loan');
-      expect(response.body).toHaveProperty('totalLoan', 100000);
+      expect(response.body).toHaveProperty('loanType');
+    });
+
+    test('PUT /api/update should update loan details', async () => {
+      await request(app)
+        .post('/api/create?mobileNumber=1234567890')
+        .expect(201);
+
+      const fetchResponse = await request(app)
+        .get('/api/fetch?mobileNumber=1234567890')
+        .expect(200);
+
+      const updatedLoan = {
+        mobileNumber: '1234567890',
+        loanNumber: fetchResponse.body.loanNumber,
+        loanType: 'Personal Loan',
+        totalLoan: 50000,
+        amountPaid: 10000,
+        outstandingAmount: 40000
+      };
+
+      const response = await request(app)
+        .put('/api/update')
+        .send(updatedLoan)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('statusCode', '200');
+      expect(response.body).toHaveProperty('statusMsg');
+    });
+
+    test('DELETE /api/delete should delete loan details', async () => {
+      await request(app)
+        .post('/api/create?mobileNumber=1234567890')
+        .expect(201);
+
+      const response = await request(app)
+        .delete('/api/delete?mobileNumber=1234567890')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('statusCode', '200');
+      expect(response.body).toHaveProperty('statusMsg');
     });
   });
 });

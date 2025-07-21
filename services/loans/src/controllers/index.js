@@ -5,9 +5,9 @@ const logger = require('../../../../shared/utils/logger');
 const loansService = new LoansService();
 
 module.exports = {
-  createLoan: async (req, res) => {
+  createLoan: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       await loansService.createLoan(mobileNumber);
       return res.status(201).json({
         statusCode: LOANS_CONSTANTS.STATUS_201,
@@ -24,9 +24,9 @@ module.exports = {
     }
   },
 
-  fetchLoan: async (req, res) => {
+  fetchLoan: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       logger.debug('fetchLoan method start');
       const loansDto = await loansService.fetchLoan(mobileNumber);
       logger.debug('fetchLoan method end');
@@ -42,9 +42,9 @@ module.exports = {
     }
   },
 
-  updateLoan: async (req, res) => {
+  updateLoan: async (c, req, res) => {
     try {
-      const loansDto = req.body;
+      const loansDto = c.request.requestBody;
       const isUpdated = await loansService.updateLoan(loansDto);
       if (isUpdated) {
         return res.status(200).json({
@@ -68,9 +68,9 @@ module.exports = {
     }
   },
 
-  deleteLoan: async (req, res) => {
+  deleteLoan: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       const isDeleted = await loansService.deleteLoan(mobileNumber);
       if (isDeleted) {
         return res.status(200).json({
@@ -94,14 +94,14 @@ module.exports = {
     }
   },
 
-  getBuildInfo: async (req, res) => {
+  getBuildInfo: async (c, req, res) => {
     return res.status(200).json({
       version: process.env.BUILD_VERSION || '1.0.0',
       timestamp: new Date().toISOString()
     });
   },
 
-  getContactInfo: async (req, res) => {
+  getContactInfo: async (c, req, res) => {
     return res.status(200).json({
       name: 'Kuro Bytes - Loans Service',
       email: 'support@kurobytes.com',
