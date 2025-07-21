@@ -3,7 +3,7 @@
 ## プロジェクト全体構成
 
 ```
-microservices-express/
+microservices-express-js/
 ├── services/
 │   ├── accounts/                    # Accounts Service (Port: 8080)
 │   │   ├── src/
@@ -313,8 +313,8 @@ export const ERROR_CODES = {
 
 ```bash
 # プロジェクト作成
-mkdir microservices-express
-cd microservices-express
+mkdir microservices-express-js
+cd microservices-express-js
 
 # 共通ライブラリセットアップ
 mkdir -p shared/{types,middleware,utils,config}

@@ -77,8 +77,8 @@ https://github.com/kurosawa-kuro/express-like-springboot
 
 ```bash
 # 新しいプロジェクト作成
-mkdir microservices-express
-cd microservices-express
+mkdir microservices-express-js
+cd microservices-express-js
 
 # 各サービスディレクトリ作成
 mkdir -p services/{accounts,cards,loans,gateway,message}
@@ -204,13 +204,13 @@ module.exports = app;
 
 ### 5.2 相関ID ミドルウェア
 
-```typescript
-// src/middleware/correlationId.ts
-import { Request, Response, NextFunction } from 'express';
-import { v4 as uuidv4 } from 'uuid';
+```javascript
+// src/middleware/correlationId.js
+const { Request, Response, NextFunction } = require('express');
+const { v4: uuidv4 } = require('uuid');
 
-export const correlationId = (req: Request, res: Response, next: NextFunction) => {
-  const correlationId = req.headers['kurobank-correlation-id'] as string || uuidv4();
+module.exports = (req, res, next) => {
+  const correlationId = req.headers['kurobank-correlation-id'] || uuidv4();
   req.correlationId = correlationId;
   res.setHeader('kurobank-correlation-id', correlationId);
   next();
@@ -219,13 +219,13 @@ export const correlationId = (req: Request, res: Response, next: NextFunction) =
 
 ### 5.3 エラーハンドリング
 
-```typescript
-// src/middleware/errorHandler.ts
-import { Request, Response, NextFunction } from 'express';
-import { ErrorResponseDto } from '../types/ErrorResponseDto';
+```javascript
+// src/middleware/errorHandler.js
+const { Request, Response, NextFunction } = require('express');
+const { ErrorResponseDto } = require('../types/ErrorResponseDto');
 
-export const errorHandler = (error: Error, req: Request, res: Response, next: NextFunction) => {
-  const errorResponse: ErrorResponseDto = {
+module.exports = (error, req, res, next) => {
+  const errorResponse = {
     apiPath: req.path,
     errorCode: 'INTERNAL_SERVER_ERROR',
     errorMessage: error.message,
@@ -238,13 +238,13 @@ export const errorHandler = (error: Error, req: Request, res: Response, next: Ne
 
 ### 5.4 バリデーションミドルウェア
 
-```typescript
-// src/middleware/validation.ts
-import { Request, Response, NextFunction } from 'express';
-import { ZodSchema } from 'zod';
+```javascript
+// src/middleware/validation.js
+const { Request, Response, NextFunction } = require('express');
+const { ZodSchema } = require('zod');
 
-export const validate = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+module.exports = (schema) => {
+  return (req, res, next) => {
     try {
       schema.parse(req.body);
       next();
@@ -300,18 +300,18 @@ model Customer {
 services/cards/
 ├── src/
 │   ├── controllers/
-│   │   └── cardsController.ts
+│   │   └── cardsController.js
 │   ├── services/
-│   │   └── cardsService.ts
+│   │   └── cardsService.js
 │   ├── repositories/
-│   │   └── cardsRepository.ts
+│   │   └── cardsRepository.js
 │   ├── types/
-│   │   ├── CardsDto.ts
-│   │   └── CardsEntity.ts
+│   │   ├── CardsDto.js
+│   │   └── CardsEntity.js
 │   ├── middleware/
 │   ├── routes/
-│   │   └── index.ts
-│   └── app.ts
+│   │   └── index.js
+│   └── app.js
 ├── prisma/
 │   └── schema.prisma
 ├── package.json
@@ -343,16 +343,16 @@ module.exports = {
 
 #### Service層実装
 
-```typescript
-// src/services/cardsService.ts
-import { CardsRepository } from '../repositories/cardsRepository';
-import { CardsDto } from '../types/CardsDto';
-import { CardsMapper } from '../mappers/cardsMapper';
+```javascript
+// src/services/cardsService.js
+const { CardsRepository } = require('../repositories/cardsRepository');
+const { CardsDto } = require('../types/CardsDto');
+const { CardsMapper } = require('../mappers/cardsMapper');
 
-export class CardsService {
-  constructor(private cardsRepository: CardsRepository) {}
+module.exports = class CardsService {
+  constructor(private cardsRepository) {}
 
-  async createCard(mobileNumber: string): Promise<void> {
+  async createCard(mobileNumber) {
     const existingCard = await this.cardsRepository.findByMobileNumber(mobileNumber);
     
     if (existingCard) {
@@ -371,7 +371,7 @@ export class CardsService {
     await this.cardsRepository.create(newCard);
   }
 
-  async fetchCard(mobileNumber: string): Promise<CardsDto> {
+  async fetchCard(mobileNumber) {
     const card = await this.cardsRepository.findByMobileNumber(mobileNumber);
     
     if (!card) {
@@ -381,7 +381,7 @@ export class CardsService {
     return CardsMapper.mapToCardsDto(card);
   }
 
-  private generateRandomCardNumber(): string {
+  private generateRandomCardNumber() {
     return Math.floor(100000000000 + Math.random() * 900000000000).toString();
   }
 }
@@ -402,7 +402,7 @@ services/cards/tests/
 ├── integration/
 │   └── api/
 └── fixtures/
-    └── testData.ts
+    └── testData.js
 ```
 
 ### 7.2 Jest設定
@@ -417,9 +417,9 @@ services/cards/tests/
   "jest": {
     "testEnvironment": "node",
     "roots": ["<rootDir>/src", "<rootDir>/tests"],
-    "testMatch": ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+    "testMatch": ["**/__tests__/**/*.js", "**/?(*.)+(spec|test).js"],
     "transform": {
-      "^.+\\.ts$": "ts-jest"
+      "^.+\\.js$": "babel-jest"
     }
   }
 }
