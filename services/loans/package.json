@@ -19,7 +19,8 @@
     "openapi-backend": "^5.10.6",
     "zod": "^3.22.0",
     "@prisma/client": "^5.7.0",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "jest": "^30.0.4",

@@ -115,42 +115,4 @@ module.exports = {
     }
   },
 
-  getBuildInfo: async (c, req, res) => {
-    return res.status(200).json({
-      version: process.env.BUILD_VERSION || '1.0.0',
-      timestamp: new Date().toISOString()
-    });
-  },
-
-  getContactInfo: async (c, req, res) => {
-    return res.status(200).json({
-      name: 'Kuro Bytes - Accounts Service',
-      email: 'support@kurobytes.com',
-      onCallSupport: '+1-555-ACCOUNTS'
-    });
-  },
-
-  healthCheck: async (c, req, res) => {
-    return res.status(200).json({ 
-      status: 'UP', 
-      timestamp: new Date().toISOString(),
-      service: 'accounts-service'
-    });
-  },
-
-  notFound: (c, req, res) => {
-    return res.status(404).json({ 
-      error: 'Not found',
-      apiPath: req.url,
-      errorTime: new Date().toISOString()
-    });
-  },
-
-  validationFail: (c, req, res) => {
-    return res.status(400).json({ 
-      error: 'Validation error',
-      apiPath: req.url,
-      errorTime: new Date().toISOString()
-    });
-  }
 };

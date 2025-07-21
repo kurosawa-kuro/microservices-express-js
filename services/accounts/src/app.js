@@ -5,9 +5,15 @@ const path = require('path');
 const OpenAPIBackend = require('openapi-backend').default;
 const correlationId = require('../../../shared/middleware/correlationId');
 const errorHandler = require('../../../shared/middleware/errorHandler');
+const bigIntSerializer = require('../../../shared/middleware/bigIntSerializer');
+const createOpenApiHandlers = require('../../../shared/middleware/openApiHandlers');
+const createCommonHandlers = require('../../../shared/utils/commonHandlers');
 const controllers = require('./controllers');
 
 dotenv.config();
+
+const openApiHandlers = createOpenApiHandlers('accounts-service');
+const commonHandlers = createCommonHandlers('accounts');
 
 // Initialize OpenAPI Backend
 const api = new OpenAPIBackend({
@@ -18,29 +24,11 @@ const api = new OpenAPIBackend({
     updateAccount: controllers.updateAccount,
     deleteAccount: controllers.deleteAccount,
     fetchCustomerDetails: controllers.fetchCustomerDetails,
-    getBuildInfo: controllers.getBuildInfo,
-    getContactInfo: controllers.getContactInfo,
-    healthCheck: (c, req, res) => res.status(200).json({ 
-      status: 'UP', 
-      timestamp: new Date().toISOString(),
-      service: 'accounts-service'
-    }),
-    validationFail: (c, req, res, err) => {
-      res.status(400).json({
-        apiPath: req.path,
-        errorCode: 'VALIDATION_ERROR',
-        errorMessage: err?.message || 'Validation failed',
-        errorTime: new Date().toISOString()
-      });
-    },
-    notFound: (req, res) => {
-      res.status(404).json({
-        apiPath: req.path,
-        errorCode: 'NOT_FOUND',
-        errorMessage: 'API endpoint not found',
-        errorTime: new Date().toISOString()
-      });
-    }
+    getBuildInfo: commonHandlers.getBuildInfo,
+    getContactInfo: commonHandlers.getContactInfo,
+    healthCheck: openApiHandlers.healthCheck,
+    validationFail: openApiHandlers.validationFail,
+    notFound: openApiHandlers.notFound
   }
 });
 
@@ -50,16 +38,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(correlationId);
-
-app.use((req, res, next) => {
-  const originalJson = res.json;
-  res.json = function(obj) {
-    return originalJson.call(this, JSON.parse(JSON.stringify(obj, (key, value) =>
-      typeof value === 'bigint' ? Number(value) : value
-    )));
-  };
-  next();
-});
+app.use(bigIntSerializer);
 
 // Use OpenAPI Backend to handle all requests
 app.use((req, res) => api.handleRequest(req, req, res));

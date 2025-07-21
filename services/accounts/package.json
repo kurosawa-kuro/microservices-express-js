@@ -21,7 +21,8 @@
     "@prisma/client": "^5.7.0",
     "axios": "^1.6.0",
     "kafkajs": "^2.2.4",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "jest": "^30.0.4",
