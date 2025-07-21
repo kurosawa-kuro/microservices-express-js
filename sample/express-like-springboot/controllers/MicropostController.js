@@ -42,10 +42,10 @@ export class MicropostController {
       if (error.name === 'ZodError') {
         return res.status(400).json({
           error: 'Validation failed',
-          details: error.errors.map(err => ({
+          details: error.errors ? error.errors.map(err => ({
             path: err.path.join('.'),
             message: err.message
-          }))
+          })) : []
         });
       }
       if (error.message === 'User not found') {
