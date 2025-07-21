@@ -1,0 +1,173 @@
+openapi: 3.0.3
+info:
+  title: KuroBank Cards Service API
+  description: CRUD REST APIs in KuroBank to CREATE, UPDATE, FETCH AND DELETE card details
+  version: 1.0.0
+  contact:
+    name: Kuro Bytes
+    email: support@kurobytes.com
+
+paths:
+  /api/create:
+    post:
+      operationId: createCard
+      summary: Create Card REST API
+      description: REST API to create new Card inside KuroBank
+      parameters:
+        - name: mobileNumber
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+          description: Mobile number must be 10 digits
+      responses:
+        '201':
+          description: HTTP Status CREATED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDto'
+        '500':
+          description: HTTP Status Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+
+  /api/fetch:
+    get:
+      operationId: fetchCard
+      summary: Fetch Card Details REST API
+      description: REST API to fetch card details based on a mobile number
+      parameters:
+        - name: kurobank-correlation-id
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: mobileNumber
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+          description: Mobile number must be 10 digits
+      responses:
+        '200':
+          description: HTTP Status OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardsDto'
+        '500':
+          description: HTTP Status Internal Server Error
+
+  /api/update:
+    put:
+      operationId: updateCard
+      summary: Update Card Details REST API
+      description: REST API to update card details based on a card number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardsDto'
+      responses:
+        '200':
+          description: HTTP Status OK
+        '417':
+          description: Expectation Failed
+        '500':
+          description: HTTP Status Internal Server Error
+
+  /api/delete:
+    delete:
+      operationId: deleteCard
+      summary: Delete Card Details REST API
+      description: REST API to delete Card details based on a mobile number
+      parameters:
+        - name: mobileNumber
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9]{10}$'
+      responses:
+        '200':
+          description: HTTP Status OK
+        '417':
+          description: Expectation Failed
+        '500':
+          description: HTTP Status Internal Server Error
+
+  /api/build-info:
+    get:
+      operationId: getBuildInfo
+      summary: Get Build information
+      responses:
+        '200':
+          description: HTTP Status OK
+
+  /api/contact-info:
+    get:
+      operationId: getContactInfo
+      summary: Get Contact Info
+      responses:
+        '200':
+          description: HTTP Status OK
+
+  /actuator/health:
+    get:
+      operationId: healthCheck
+      summary: Health Check
+      responses:
+        '200':
+          description: Service is healthy
+
+components:
+  schemas:
+    CardsDto:
+      type: object
+      properties:
+        mobileNumber:
+          type: string
+          pattern: '^[0-9]{10}$'
+        cardNumber:
+          type: string
+        cardType:
+          type: string
+        totalLimit:
+          type: integer
+        amountUsed:
+          type: integer
+        availableAmount:
+          type: integer
+      required:
+        - mobileNumber
+        - cardNumber
+        - cardType
+        - totalLimit
+        - amountUsed
+        - availableAmount
+
+    ResponseDto:
+      type: object
+      properties:
+        statusCode:
+          type: string
+        statusMsg:
+          type: string
+
+    ErrorResponseDto:
+      type: object
+      properties:
+        apiPath:
+          type: string
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        errorTime:
+          type: string

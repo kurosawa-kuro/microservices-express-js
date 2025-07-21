@@ -1,0 +1,31 @@
+{
+  "name": "@kurobank/accounts-service",
+  "version": "1.0.0",
+  "description": "KuroBank Accounts Service for customer and account management",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "jest",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "js-yaml": "^4.1.0",
+    "openapi-backend": "^5.10.6",
+    "zod": "^3.22.0",
+    "@prisma/client": "^5.7.0",
+    "axios": "^1.6.0",
+    "kafkajs": "^2.2.4",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "jest": "^30.0.4",
+    "prisma": "^5.7.0",
+    "supertest": "^7.1.3"
+  }
+}
