@@ -8,34 +8,34 @@ microservices-express/
 │   ├── accounts/                    # Accounts Service (Port: 8080)
 │   │   ├── src/
 │   │   │   ├── controllers/
-│   │   │   │   ├── AccountsController.ts
-│   │   │   │   └── CustomerController.ts
+│   │   │   │   ├── AccountsController.js
+│   │   │   │   └── CustomerController.js
 │   │   │   ├── services/
-│   │   │   │   ├── AccountsService.ts
-│   │   │   │   └── CustomersService.ts
+│   │   │   │   ├── AccountsService.js
+│   │   │   │   └── CustomersService.js
 │   │   │   ├── repositories/
-│   │   │   │   ├── AccountsRepository.ts
-│   │   │   │   └── CustomerRepository.ts
+│   │   │   │   ├── AccountsRepository.js
+│   │   │   │   └── CustomerRepository.js
 │   │   │   ├── clients/
-│   │   │   │   ├── CardsClient.ts
-│   │   │   │   └── LoansClient.ts
+│   │   │   │   ├── CardsClient.js
+│   │   │   │   └── LoansClient.js
 │   │   │   ├── types/
-│   │   │   │   ├── AccountsDto.ts
-│   │   │   │   ├── CustomerDto.ts
-│   │   │   │   ├── CustomerDetailsDto.ts
-│   │   │   │   └── ResponseDto.ts
+│   │   │   │   ├── AccountsDto.js
+│   │   │   │   ├── CustomerDto.js
+│   │   │   │   ├── CustomerDetailsDto.js
+│   │   │   │   └── ResponseDto.js
 │   │   │   ├── middleware/
-│   │   │   │   ├── auth.ts
-│   │   │   │   ├── correlationId.ts
-│   │   │   │   ├── errorHandler.ts
-│   │   │   │   └── validation.ts
+│   │   │   │   ├── auth.js
+│   │   │   │   ├── correlationId.js
+│   │   │   │   ├── errorHandler.js
+│   │   │   │   └── validation.js
 │   │   │   ├── routes/
-│   │   │   │   └── index.ts
+│   │   │   │   └── index.js
 │   │   │   ├── utils/
-│   │   │   │   ├── logger.ts
-│   │   │   │   └── constants.ts
-│   │   │   ├── app.ts
-│   │   │   └── server.ts
+│   │   │   │   ├── logger.js
+│   │   │   │   └── constants.js
+│   │   │   ├── app.js
+│   │   │   └── server.js
 │   │   ├── prisma/
 │   │   │   ├── schema.prisma
 │   │   │   └── migrations/
@@ -59,44 +59,44 @@ microservices-express/
 │   ├── gateway/                     # Gateway Service (Port: 8072)
 │   │   ├── src/
 │   │   │   ├── middleware/
-│   │   │   │   ├── auth.ts
-│   │   │   │   ├── rateLimiting.ts
-│   │   │   │   └── circuitBreaker.ts
+│   │   │   │   ├── auth.js
+│   │   │   │   ├── rateLimiting.js
+│   │   │   │   └── circuitBreaker.js
 │   │   │   ├── config/
-│   │   │   │   └── routes.ts
-│   │   │   ├── app.ts
-│   │   │   └── server.ts
+│   │   │   │   └── routes.js
+│   │   │   ├── app.js
+│   │   │   └── server.js
 │   │   └── [基本構造]
 │   │
 │   └── message/                     # Message Service (Port: 9010)
 │       ├── src/
 │       │   ├── handlers/
-│       │   │   └── MessageHandler.ts
+│       │   │   └── MessageHandler.js
 │       │   ├── services/
-│       │   │   ├── EmailService.ts
-│       │   │   └── SmsService.ts
+│       │   │   ├── EmailService.js
+│       │   │   └── SmsService.js
 │       │   └── [基本構造]
 │
 ├── shared/                          # 共通ライブラリ
 │   ├── types/
 │   │   ├── common/
-│   │   │   ├── ResponseDto.ts
-│   │   │   ├── ErrorResponseDto.ts
-│   │   │   └── BaseEntity.ts
+│   │   │   ├── ResponseDto.js
+│   │   │   ├── ErrorResponseDto.js
+│   │   │   └── BaseEntity.js
 │   │   └── events/
-│   │       └── AccountCreatedEvent.ts
+│   │       └── AccountCreatedEvent.js
 │   ├── middleware/
-│   │   ├── correlationId.ts
-│   │   ├── errorHandler.ts
-│   │   ├── requestLogger.ts
-│   │   └── validation.ts
+│   │   ├── correlationId.js
+│   │   ├── errorHandler.js
+│   │   ├── requestLogger.js
+│   │   └── validation.js
 │   ├── utils/
-│   │   ├── logger.ts
-│   │   ├── constants.ts
-│   │   └── database.ts
+│   │   ├── logger.js
+│   │   ├── constants.js
+│   │   └── database.js
 │   └── config/
-│       ├── database.ts
-│       └── openapi.ts
+│       ├── database.js
+│       └── openapi.js
 │
 ├── docs/                            # ドキュメント
 │   ├── api/
@@ -140,13 +140,13 @@ services/[service-name]/
 │   ├── routes/                     # ルーティング設定
 │   ├── utils/                      # ユーティリティ関数
 │   ├── config/                     # 設定ファイル
-│   ├── app.ts                      # Express アプリケーション設定
-│   └── server.ts                   # サーバー起動スクリプト
+│   ├── app.js                      # Express アプリケーション設定
+│   └── server.js                   # サーバー起動スクリプト
 │
 ├── prisma/                         # データベース関連
 │   ├── schema.prisma               # Prisma スキーマ定義
 │   ├── migrations/                 # DB マイグレーション
-│   └── seed.ts                     # 初期データ投入
+│   └── seed.js                     # 初期データ投入
 │
 ├── tests/                          # テストファイル
 │   ├── unit/                       # 単体テスト
@@ -156,9 +156,9 @@ services/[service-name]/
 │   ├── integration/                # 結合テスト
 │   │   └── api/
 │   ├── fixtures/                   # テストデータ
-│   │   └── testData.ts
+│   │   └── testData.js
 │   └── helpers/                    # テストユーティリティ
-│       └── testSetup.ts
+│       └── testSetup.js
 │
 ├── docker/                         # Docker関連
 │   ├── Dockerfile                  # 本番用
@@ -193,13 +193,25 @@ services/[service-name]/
 ### types/common/ - 共通型定義
 
 ```javascript
-// shared/types/common/ResponseDto.ts
+// shared/types/common/ResponseDto.js
+/**
+ * @typedef {Object} ResponseDto
+ * @property {string} statusCode - HTTP status code.
+ * @property {string} statusMsg - Message describing the status.
+ */
 export interface ResponseDto {
   statusCode: string;
   statusMsg: string;
 }
 
-// shared/types/common/ErrorResponseDto.ts
+// shared/types/common/ErrorResponseDto.js
+/**
+ * @typedef {Object} ErrorResponseDto
+ * @property {string} apiPath - The path where the error occurred.
+ * @property {string} errorCode - A unique identifier for the error type.
+ * @property {string} errorMessage - A human-readable description of the error.
+ * @property {string} errorTime - Timestamp of the error.
+ */
 export interface ErrorResponseDto {
   apiPath: string;
   errorCode: string;
@@ -207,7 +219,14 @@ export interface ErrorResponseDto {
   errorTime: string;
 }
 
-// shared/types/common/BaseEntity.ts
+// shared/types/common/BaseEntity.js
+/**
+ * @typedef {Object} BaseEntity
+ * @property {Date} createdAt - Timestamp when the entity was created.
+ * @property {string} createdBy - Identifier of the user who created the entity.
+ * @property {Date} updatedAt - Timestamp when the entity was last updated.
+ * @property {string} updatedBy - Identifier of the user who last updated the entity.
+ */
 export interface BaseEntity {
   createdAt: Date;
   createdBy: string;
@@ -219,7 +238,7 @@ export interface BaseEntity {
 ### middleware/ - 共通ミドルウェア
 
 ```javascript
-// shared/middleware/correlationId.ts
+// shared/middleware/correlationId.js
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -242,7 +261,7 @@ export const correlationIdMiddleware = (req, res, next) => {
 ### utils/ - 共通ユーティリティ
 
 ```javascript
-// shared/utils/logger.ts
+// shared/utils/logger.js
 import winston from 'winston';
 
 export const logger = winston.createLogger({
@@ -261,7 +280,7 @@ export const logger = winston.createLogger({
 ```
 
 ```javascript
-// shared/utils/constants.ts
+// shared/utils/constants.js
 export const HTTP_STATUS_CODES = {
   OK: 200,
   CREATED: 201,
@@ -320,9 +339,9 @@ cat > package.json << EOL
   "name": "@kurobank/$SERVICE_NAME-service",
   "version": "1.0.0",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "echo 'No build step for JS'",
+    "start": "node src/server.js",
     "test": "jest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev"
@@ -337,13 +356,8 @@ cat > package.json << EOL
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.0",
-    "@types/node": "^20.10.0",
-    "@types/express": "^4.17.21",
-    "ts-node": "^10.9.0",
     "nodemon": "^3.0.2",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.1"
+    "jest": "^29.7.0"
   }
 }
 EOL
