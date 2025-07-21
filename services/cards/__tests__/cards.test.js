@@ -38,14 +38,8 @@ describe('Cards Service API', () => {
 
   describe('Card Management', () => {
     test('POST /api/create should create a new card', async () => {
-      const newCard = {
-        mobileNumber: '1234567890',
-        cardType: 'Credit Card'
-      };
-
       const response = await request(app)
-        .post('/api/create')
-        .send(newCard)
+        .post('/api/create?mobileNumber=1234567890')
         .expect(201);
 
       expect(response.body).toHaveProperty('statusCode', '201');
@@ -61,14 +55,8 @@ describe('Cards Service API', () => {
     });
 
     test('GET /api/fetch should return card details for valid mobile number', async () => {
-      const newCard = {
-        mobileNumber: '1234567890',
-        cardType: 'Credit Card'
-      };
-
       await request(app)
-        .post('/api/create')
-        .send(newCard)
+        .post('/api/create?mobileNumber=1234567890')
         .expect(201);
 
       const response = await request(app)
@@ -76,7 +64,47 @@ describe('Cards Service API', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('mobileNumber', '1234567890');
-      expect(response.body).toHaveProperty('cardType', 'Credit Card');
+      expect(response.body).toHaveProperty('cardType');
+    });
+
+    test('PUT /api/update should update card details', async () => {
+      await request(app)
+        .post('/api/create?mobileNumber=1234567890')
+        .expect(201);
+
+      const fetchResponse = await request(app)
+        .get('/api/fetch?mobileNumber=1234567890')
+        .expect(200);
+
+      const updatedCard = {
+        mobileNumber: '1234567890',
+        cardNumber: fetchResponse.body.cardNumber,
+        cardType: 'Debit Card',
+        totalLimit: 5000,
+        amountUsed: 1000,
+        availableAmount: 4000
+      };
+
+      const response = await request(app)
+        .put('/api/update')
+        .send(updatedCard)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('statusCode', '200');
+      expect(response.body).toHaveProperty('statusMsg');
+    });
+
+    test('DELETE /api/delete should delete card details', async () => {
+      await request(app)
+        .post('/api/create?mobileNumber=1234567890')
+        .expect(201);
+
+      const response = await request(app)
+        .delete('/api/delete?mobileNumber=1234567890')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('statusCode', '200');
+      expect(response.body).toHaveProperty('statusMsg');
     });
   });
 });

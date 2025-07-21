@@ -5,9 +5,9 @@ const logger = require('../../../../shared/utils/logger');
 const cardsService = new CardsService();
 
 module.exports = {
-  createCard: async (req, res) => {
+  createCard: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       await cardsService.createCard(mobileNumber);
       return res.status(201).json({
         statusCode: CARDS_CONSTANTS.STATUS_201,
@@ -24,9 +24,9 @@ module.exports = {
     }
   },
 
-  fetchCard: async (req, res) => {
+  fetchCard: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       logger.debug('fetchCard method start');
       const cardsDto = await cardsService.fetchCard(mobileNumber);
       logger.debug('fetchCard method end');
@@ -42,9 +42,9 @@ module.exports = {
     }
   },
 
-  updateCard: async (req, res) => {
+  updateCard: async (c, req, res) => {
     try {
-      const cardsDto = req.body;
+      const cardsDto = c.request.requestBody;
       const isUpdated = await cardsService.updateCard(cardsDto);
       if (isUpdated) {
         return res.status(200).json({
@@ -68,9 +68,9 @@ module.exports = {
     }
   },
 
-  deleteCard: async (req, res) => {
+  deleteCard: async (c, req, res) => {
     try {
-      const { mobileNumber } = req.query;
+      const { mobileNumber } = c.request.query;
       const isDeleted = await cardsService.deleteCard(mobileNumber);
       if (isDeleted) {
         return res.status(200).json({
@@ -94,14 +94,14 @@ module.exports = {
     }
   },
 
-  getBuildInfo: async (req, res) => {
+  getBuildInfo: async (c, req, res) => {
     return res.status(200).json({
       version: process.env.BUILD_VERSION || '1.0.0',
       timestamp: new Date().toISOString()
     });
   },
 
-  getContactInfo: async (req, res) => {
+  getContactInfo: async (c, req, res) => {
     return res.status(200).json({
       name: 'Kuro Bytes - Cards Service',
       email: 'support@kurobytes.com',
