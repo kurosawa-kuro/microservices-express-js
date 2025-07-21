@@ -4,8 +4,11 @@ const dotenv = require('dotenv');
 const correlationId = require('../../../shared/middleware/correlationId');
 const errorHandler = require('../../../shared/middleware/errorHandler');
 const logger = require('../../../shared/utils/logger');
+const createHealthCheckHandler = require('../../../shared/utils/healthCheckUtility');
 
 dotenv.config();
+
+const healthCheckHandler = createHealthCheckHandler('message-service');
 
 const app = express();
 
@@ -13,13 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(correlationId);
 
-app.get('/actuator/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'UP', 
-    timestamp: new Date().toISOString(),
-    service: 'message-service'
-  });
-});
+app.get('/actuator/health', healthCheckHandler);
 
 app.get('/api/build-info', (req, res) => {
   res.status(200).json({

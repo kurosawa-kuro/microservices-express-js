@@ -6,8 +6,11 @@ const correlationId = require('../../../shared/middleware/correlationId');
 const errorHandler = require('../../../shared/middleware/errorHandler');
 const authMiddleware = require('./middleware/authMiddleware');
 const logger = require('../../../shared/utils/logger');
+const createHealthCheckHandler = require('../../../shared/utils/healthCheckUtility');
 
 dotenv.config();
+
+const healthCheckHandler = createHealthCheckHandler('gateway-service');
 
 const app = express();
 
@@ -21,13 +24,7 @@ app.use(cors({
 app.use(express.json());
 app.use(correlationId);
 
-app.get('/actuator/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'UP', 
-    timestamp: new Date().toISOString(),
-    service: 'gateway-service'
-  });
-});
+app.get('/actuator/health', healthCheckHandler);
 
 app.use('/public/**', createProxyMiddleware({
   target: process.env.ACCOUNTS_SERVICE_URL,
@@ -46,6 +43,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     status: 'UP', 
     timestamp: new Date().toISOString(),
+    service: 'gateway-service',
     gateway: 'healthy'
   });
 });
