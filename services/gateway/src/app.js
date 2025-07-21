@@ -2,11 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const correlationId = require('../../../shared/middleware/correlationId');
-const errorHandler = require('../../../shared/middleware/errorHandler');
+const correlationId = require('../shared/middleware/correlationId');
+const errorHandler = require('../shared/middleware/errorHandler');
 const authMiddleware = require('./middleware/authMiddleware');
-const logger = require('../../../shared/utils/logger');
-const createHealthCheckHandler = require('../../../shared/utils/healthCheckUtility');
+const { requireRole } = require('../shared/middleware/roleMiddleware');
+const logger = require('../shared/utils/logger');
+const createHealthCheckHandler = require('../shared/utils/healthCheckUtility');
 
 dotenv.config();
 
@@ -51,16 +52,7 @@ app.get('/api/health', (req, res) => {
 app.use('/kurobank/**', authMiddleware);
 
 app.use('/kurobank/accounts/**', 
-  (req, res, next) => {
-    if (!req.user.roles.includes('ACCOUNTS')) {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: 'ACCOUNTS role required',
-        timestamp: new Date().toISOString()
-      });
-    }
-    next();
-  },
+  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.ACCOUNTS_SERVICE_URL,
     changeOrigin: true,
@@ -76,16 +68,7 @@ app.use('/kurobank/accounts/**',
 );
 
 app.use('/kurobank/cards/**',
-  (req, res, next) => {
-    if (!req.user.roles.includes('CARDS')) {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: 'CARDS role required',
-        timestamp: new Date().toISOString()
-      });
-    }
-    next();
-  },
+  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.CARDS_SERVICE_URL,
     changeOrigin: true,
@@ -101,16 +84,7 @@ app.use('/kurobank/cards/**',
 );
 
 app.use('/kurobank/loans/**',
-  (req, res, next) => {
-    if (!req.user.roles.includes('LOANS')) {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: 'LOANS role required',
-        timestamp: new Date().toISOString()
-      });
-    }
-    next();
-  },
+  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.LOANS_SERVICE_URL,
     changeOrigin: true,

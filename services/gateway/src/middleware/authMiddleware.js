@@ -1,7 +1,22 @@
 const jwt = require('jsonwebtoken');
-const logger = require('../../../../shared/utils/logger');
+const jwksClient = require('jwks-rsa');
+const axios = require('axios');
+const logger = require('../../shared/utils/logger');
 
-const authMiddleware = (req, res, next) => {
+const client = jwksClient({
+  jwksUri: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/certs`,
+  requestHeaders: {},
+  timeout: 30000,
+});
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, (err, key) => {
+    const signingKey = key?.publicKey || key?.rsaPublicKey;
+    callback(null, signingKey);
+  });
+}
+
+const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     
@@ -13,40 +28,36 @@ const authMiddleware = (req, res, next) => {
       });
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    const token = authHeader.substring(7);
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-here');
-    
-    const roles = decoded.realm_access?.roles || decoded.roles || [];
-    
-    req.user = {
-      sub: decoded.sub,
-      email: decoded.email,
-      name: decoded.name,
-      roles: roles
-    };
+    jwt.verify(token, getKey, {
+      audience: process.env.KEYCLOAK_CLIENT_ID,
+      issuer: `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}`,
+      algorithms: ['RS256']
+    }, (err, decoded) => {
+      if (err) {
+        logger.error('Token verification error:', err);
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Invalid token',
+          timestamp: new Date().toISOString()
+        });
+      }
 
-    logger.debug(`User authenticated: ${req.user.email} with roles: ${roles.join(', ')}`);
-    next();
+      req.user = {
+        sub: decoded.sub,
+        email: decoded.email,
+        name: decoded.name,
+        preferred_username: decoded.preferred_username,
+        roles: decoded.realm_access?.roles || []
+      };
+
+      logger.info(`User authenticated: ${req.user.preferred_username}`);
+      next();
+    });
+
   } catch (error) {
     logger.error('Authentication error:', error);
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Token has expired',
-        timestamp: new Date().toISOString()
-      });
-    }
-    
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Invalid token',
-        timestamp: new Date().toISOString()
-      });
-    }
-    
     return res.status(401).json({
       error: 'Unauthorized',
       message: 'Authentication failed',
