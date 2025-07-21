@@ -9,25 +9,49 @@ const controllers = require('./controllers');
 
 dotenv.config();
 
+// Initialize OpenAPI Backend
+const api = new OpenAPIBackend({
+  definition: path.join(__dirname, '../../openapi.yaml'),
+  handlers: {
+    createLoan: controllers.createLoan,
+    fetchLoan: controllers.fetchLoan,
+    updateLoan: controllers.updateLoan,
+    deleteLoan: controllers.deleteLoan,
+    getBuildInfo: controllers.getBuildInfo,
+    getContactInfo: controllers.getContactInfo,
+    healthCheck: (req, res) => res.status(200).json({ 
+      status: 'UP', 
+      timestamp: new Date().toISOString(),
+      service: 'loans-service'
+    }),
+    validationFail: (req, res, err) => {
+      res.status(400).json({
+        apiPath: req.path,
+        errorCode: 'VALIDATION_ERROR',
+        errorMessage: err.message,
+        errorTime: new Date().toISOString()
+      });
+    },
+    notFound: (req, res) => {
+      res.status(404).json({
+        apiPath: req.path,
+        errorCode: 'NOT_FOUND',
+        errorMessage: 'API endpoint not found',
+        errorTime: new Date().toISOString()
+      });
+    }
+  }
+});
+
+api.init();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(correlationId);
 
-app.post('/api/create', controllers.createLoan);
-app.get('/api/fetch', controllers.fetchLoan);
-app.put('/api/update', controllers.updateLoan);
-app.delete('/api/delete', controllers.deleteLoan);
-app.get('/api/build-info', controllers.getBuildInfo);
-app.get('/api/contact-info', controllers.getContactInfo);
-
-app.get('/actuator/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'UP', 
-    timestamp: new Date().toISOString(),
-    service: 'loans-service'
-  });
-});
+// Use OpenAPI Backend to handle all requests
+app.use((req, res) => api.handleRequest(req, req, res));
 
 app.use(errorHandler);
 
