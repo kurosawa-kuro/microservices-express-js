@@ -39,7 +39,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 app.get('/actuator/health', healthCheckHandler);
 
 app.use('/public/**', createProxyMiddleware({
-  target: process.env.ACCOUNTS_SERVICE_URL,
+  target: process.env.ACCOUNTS_SERVICE_URL || 'http://localhost:8080',
   changeOrigin: true,
   pathRewrite: {
     '^/public': '/api'
@@ -172,7 +172,7 @@ app.use('/kurobank/**', authRateLimit, authMiddleware);
 app.use('/kurobank/accounts/**', 
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
-    target: process.env.ACCOUNTS_SERVICE_URL,
+    target: process.env.ACCOUNTS_SERVICE_URL || 'http://localhost:8080',
     changeOrigin: true,
     pathRewrite: {
       '^/kurobank/accounts': '/api'
@@ -188,7 +188,7 @@ app.use('/kurobank/accounts/**',
 app.use('/kurobank/cards/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
-    target: process.env.CARDS_SERVICE_URL,
+    target: process.env.CARDS_SERVICE_URL || 'http://localhost:9000',
     changeOrigin: true,
     pathRewrite: {
       '^/kurobank/cards': '/api'
@@ -204,7 +204,7 @@ app.use('/kurobank/cards/**',
 app.use('/kurobank/loans/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
-    target: process.env.LOANS_SERVICE_URL,
+    target: process.env.LOANS_SERVICE_URL || 'http://localhost:8090',
     changeOrigin: true,
     pathRewrite: {
       '^/kurobank/loans': '/api'
