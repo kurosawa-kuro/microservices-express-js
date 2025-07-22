@@ -1,12 +1,14 @@
 const { getOrdersClient } = require('../../../../shared/database/prismaClient');
 const logger = require('../../../../shared/utils/logger');
 const axios = require('axios');
+const KafkaProducer = require('../kafka/kafkaProducer');
 
 class OrdersService {
   constructor() {
     this.prisma = getOrdersClient();
     this.cartServiceUrl = process.env.CART_SERVICE_URL || 'http://cart-service:8084';
     this.productsServiceUrl = process.env.PRODUCTS_SERVICE_URL || 'http://products-service:8083';
+    this.kafkaProducer = new KafkaProducer();
   }
 
   async createOrder(userId, orderData) {
@@ -44,6 +46,15 @@ class OrdersService {
       });
 
       await this.clearUserCart(userId);
+
+      await this.kafkaProducer.publishOrderEvent('ORDER_CREATED', order);
+      
+      await this.kafkaProducer.publishInventoryEvent(order.id, order.orderItems);
+      
+      await this.kafkaProducer.publishPaymentEvent(order.id, {
+        amount: totalAmount,
+        paymentMethod: 'credit_card'
+      });
 
       logger.info('Order created successfully', { 
         orderId: order.id, 
@@ -101,6 +112,8 @@ class OrdersService {
           orderItems: true
         }
       });
+
+      await this.kafkaProducer.publishOrderEvent('ORDER_STATUS_UPDATED', order);
 
       logger.info('Order status updated successfully', { orderId, status });
       return order;
@@ -218,6 +231,8 @@ class OrdersService {
         }
       });
 
+      await this.kafkaProducer.publishOrderEvent('ORDER_CANCELLED', order);
+
       logger.info('Order cancelled successfully', { orderId });
       return order;
     } catch (error) {
@@ -254,6 +269,11 @@ class OrdersService {
         userId 
       });
     }
+  }
+
+  async disconnect() {
+    await this.kafkaProducer.disconnect();
+    await this.prisma.$disconnect();
   }
 }
 
