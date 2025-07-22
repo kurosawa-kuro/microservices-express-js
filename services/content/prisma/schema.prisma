@@ -1,0 +1,43 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["content"]
+}
+
+model TopPageDisplay {
+  id              Int         @id @default(autoincrement())
+  displayType     DisplayType
+  productId       Int?
+  productName     String?
+  productPrice    Float?
+  rating          Float?
+  image           String?
+  categoryId      Int?
+  categoryName    String?
+  priority        Int         @default(0)
+  specialPrice    Float?
+  startDate       DateTime    @default(now())
+  endDate         DateTime?
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("top_page_displays")
+  @@schema("content")
+}
+
+enum DisplayType {
+  SALE
+  RECOMMENDED
+  REPURCHASE
+  DAILY_DEAL
+  RECOMMENDED_CATEGORY
+  CONTINUE_SHOPPING
+
+  @@schema("content")
+}

@@ -1,0 +1,360 @@
+openapi: 3.0.3
+info:
+  title: ECShop Content Management Service API
+  description: Content management and top page display service for ECShop microservices architecture
+  version: 1.0.0
+  contact:
+    name: ECShop Development Team
+    email: dev@ecshop.com
+
+servers:
+  - url: http://localhost:8088
+    description: Local development server
+  - url: http://content-service:8088
+    description: Docker container server
+
+paths:
+  /actuator/health:
+    get:
+      summary: Health check endpoint
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+
+  /api/content/top-page-displays:
+    post:
+      summary: Create a new top page display
+      operationId: createTopPageDisplay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTopPageDisplayRequest'
+      responses:
+        '201':
+          description: Top page display created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPageDisplay'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Get all top page displays with filtering
+      operationId: getTopPageDisplays
+      parameters:
+        - name: displayType
+          in: query
+          schema:
+            $ref: '#/components/schemas/DisplayType'
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Top page displays retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPageDisplayResponse'
+
+  /api/content/top-page-displays/{id}:
+    get:
+      summary: Get a top page display by ID
+      operationId: getTopPageDisplay
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Top page display found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPageDisplay'
+        '404':
+          description: Top page display not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update a top page display
+      operationId: updateTopPageDisplay
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTopPageDisplayRequest'
+      responses:
+        '200':
+          description: Top page display updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPageDisplay'
+        '404':
+          description: Top page display not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete a top page display
+      operationId: deleteTopPageDisplay
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Top page display deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: TopPageDisplay deleted successfully
+        '404':
+          description: Top page display not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/content/top-page-displays/active:
+    get:
+      summary: Get active top page displays
+      operationId: getActiveTopPageDisplays
+      parameters:
+        - name: displayType
+          in: query
+          schema:
+            $ref: '#/components/schemas/DisplayType'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Active top page displays retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPageDisplayResponse'
+
+  /api/content/top-page-displays/{id}/toggle-status:
+    patch:
+      summary: Toggle the active status of a top page display
+      operationId: toggleTopPageDisplayStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Top page display status toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPageDisplay'
+        '404':
+          description: Top page display not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    TopPageDisplay:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayType:
+          $ref: '#/components/schemas/DisplayType'
+        productId:
+          type: integer
+          nullable: true
+        productName:
+          type: string
+          nullable: true
+        productPrice:
+          type: number
+          format: float
+          nullable: true
+        rating:
+          type: number
+          format: float
+          nullable: true
+        image:
+          type: string
+          nullable: true
+        categoryId:
+          type: integer
+          nullable: true
+        categoryName:
+          type: string
+          nullable: true
+        priority:
+          type: integer
+          default: 0
+        specialPrice:
+          type: number
+          format: float
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateTopPageDisplayRequest:
+      type: object
+      required:
+        - displayType
+      properties:
+        displayType:
+          $ref: '#/components/schemas/DisplayType'
+        productId:
+          type: integer
+        productName:
+          type: string
+        productPrice:
+          type: number
+          format: float
+        rating:
+          type: number
+          format: float
+        image:
+          type: string
+        categoryId:
+          type: integer
+        categoryName:
+          type: string
+        priority:
+          type: integer
+          default: 0
+        specialPrice:
+          type: number
+          format: float
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+          default: true
+
+    DisplayType:
+      type: string
+      enum:
+        - SALE
+        - RECOMMENDED
+        - REPURCHASE
+        - DAILY_DEAL
+        - RECOMMENDED_CATEGORY
+        - CONTINUE_SHOPPING
+
+    TopPageDisplayResponse:
+      type: object
+      properties:
+        topPageDisplays:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopPageDisplay'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time

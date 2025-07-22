@@ -182,6 +182,8 @@ services:
       - CART_SERVICE_URL=http://cart-service:8084
       - ORDERS_SERVICE_URL=http://orders-service:8085
       - PAYMENTS_SERVICE_URL=http://payments-service:8086
+      - ANALYTICS_SERVICE_URL=http://analytics-service:8087
+      - CONTENT_SERVICE_URL=http://content-service:8088
     depends_on:
       - postgres
       - keycloak
@@ -192,6 +194,8 @@ services:
       - cart-service
       - orders-service
       - payments-service
+      - analytics-service
+      - content-service
     volumes:
       - ./services/gateway:/app
       - ./shared:/app/shared
@@ -299,6 +303,50 @@ services:
         condition: service_started
     volumes:
       - ./services/payments:/app/services/payments
+      - ./shared:/app/shared
+    command: npm run dev
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: services/analytics/Dockerfile
+    container_name: analytics-service
+    ports:
+      - "8087:8087"
+    environment:
+      - NODE_ENV=development
+      - PORT=8087
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cloud-shop}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/cloud_shop?schema=analytics
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - USERS_SERVICE_URL=http://users-service:8082
+      - PRODUCTS_SERVICE_URL=http://products-service:8083
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./services/analytics:/app/services/analytics
+      - ./shared:/app/shared
+    command: npm run dev
+
+  content-service:
+    build:
+      context: .
+      dockerfile: services/content/Dockerfile
+    container_name: content-service
+    ports:
+      - "8088:8088"
+    environment:
+      - NODE_ENV=development
+      - PORT=8088
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cloud-shop}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/cloud_shop?schema=content
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - USERS_SERVICE_URL=http://users-service:8082
+      - PRODUCTS_SERVICE_URL=http://products-service:8083
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./services/content:/app/services/content
       - ./shared:/app/shared
     command: npm run dev
 

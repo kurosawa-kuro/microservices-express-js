@@ -11,6 +11,8 @@
     "services/cart",
     "services/orders",
     "services/payments",
+    "services/analytics",
+    "services/content",
     "services/message",
     "shared"
   ],

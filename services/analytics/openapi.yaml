@@ -1,0 +1,489 @@
+openapi: 3.0.3
+info:
+  title: ECShop Analytics Service API
+  description: Analytics and user behavior tracking service for ECShop microservices architecture
+  version: 1.0.0
+  contact:
+    name: ECShop Development Team
+    email: dev@ecshop.com
+
+servers:
+  - url: http://localhost:8084
+    description: Local development server
+  - url: http://analytics-service:8084
+    description: Docker container server
+
+paths:
+  /actuator/health:
+    get:
+      summary: Health check endpoint
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+
+  /api/analytics/view-history:
+    post:
+      summary: Create a new view history record
+      operationId: createViewHistory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateViewHistoryRequest'
+      responses:
+        '201':
+          description: View history created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewHistory'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/analytics/view-history/{id}:
+    get:
+      summary: Get view history by ID
+      operationId: getViewHistory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: View history ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: View history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewHistory'
+        '404':
+          description: View history not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete view history
+      operationId: deleteViewHistory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: View history ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: View history deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: View history deleted successfully
+
+  /api/analytics/users/{userId}/view-history:
+    get:
+      summary: Get user's view history
+      operationId: getUserViewHistory
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: User view history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewHistoryResponse'
+
+  /api/analytics/action-logs:
+    post:
+      summary: Create a new user action log
+      operationId: createUserActionLog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserActionLogRequest'
+      responses:
+        '201':
+          description: User action log created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActionLog'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/analytics/users/{userId}/action-logs:
+    get:
+      summary: Get user's action logs
+      operationId: getUserActionLogs
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+        - name: actionType
+          in: query
+          description: Filter by action type
+          schema:
+            $ref: '#/components/schemas/ActionType'
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: User action logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActionLogResponse'
+
+  /api/analytics/action-logs/{actionType}:
+    get:
+      summary: Get action logs by type
+      operationId: getActionLogsByType
+      parameters:
+        - name: actionType
+          in: path
+          required: true
+          description: Action type
+          schema:
+            $ref: '#/components/schemas/ActionType'
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Action logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActionLogResponse'
+
+components:
+  schemas:
+    ViewHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: string
+          example: "user123"
+        productId:
+          type: integer
+          example: 1
+        viewedAt:
+          type: string
+          format: date-time
+        productName:
+          type: string
+          example: "Wireless Headphones"
+        productPrice:
+          type: number
+          example: 99.99
+        categoryId:
+          type: integer
+          example: 1
+        categoryName:
+          type: string
+          example: "Electronics"
+
+    CreateViewHistoryRequest:
+      type: object
+      required:
+        - userId
+        - productId
+      properties:
+        userId:
+          type: string
+          example: "user123"
+        productId:
+          type: integer
+          example: 1
+        productName:
+          type: string
+          example: "Wireless Headphones"
+        productPrice:
+          type: number
+          example: 99.99
+        categoryId:
+          type: integer
+          example: 1
+        categoryName:
+          type: string
+          example: "Electronics"
+
+    UserActionLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        requestID:
+          type: string
+          example: "req123"
+        userId:
+          type: string
+          example: "user123"
+        actionType:
+          $ref: '#/components/schemas/ActionType'
+        productId:
+          type: integer
+          example: 1
+        productName:
+          type: string
+          example: "Wireless Headphones"
+        productPrice:
+          type: number
+          example: 99.99
+        categoryId:
+          type: integer
+          example: 1
+        categoryName:
+          type: string
+          example: "Electronics"
+        cartItemId:
+          type: integer
+          example: 1
+        orderId:
+          type: integer
+          example: 1
+        returnId:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 2
+        searchKeyword:
+          type: string
+          example: "headphones"
+        searchCategoryId:
+          type: integer
+          example: 1
+        searchCategoryName:
+          type: string
+          example: "Electronics"
+        reviewText:
+          type: string
+          example: "Great product!"
+        rating:
+          type: number
+          example: 4.5
+        actionReason:
+          type: string
+          example: "User liked the product"
+        errorDetails:
+          type: string
+          example: "Network timeout"
+        metadata:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateUserActionLogRequest:
+      type: object
+      required:
+        - userId
+        - actionType
+      properties:
+        requestID:
+          type: string
+          example: "req123"
+        userId:
+          type: string
+          example: "user123"
+        actionType:
+          $ref: '#/components/schemas/ActionType'
+        productId:
+          type: integer
+          example: 1
+        productName:
+          type: string
+          example: "Wireless Headphones"
+        productPrice:
+          type: number
+          example: 99.99
+        categoryId:
+          type: integer
+          example: 1
+        categoryName:
+          type: string
+          example: "Electronics"
+        cartItemId:
+          type: integer
+          example: 1
+        orderId:
+          type: integer
+          example: 1
+        returnId:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 2
+        searchKeyword:
+          type: string
+          example: "headphones"
+        searchCategoryId:
+          type: integer
+          example: 1
+        searchCategoryName:
+          type: string
+          example: "Electronics"
+        reviewText:
+          type: string
+          example: "Great product!"
+        rating:
+          type: number
+          example: 4.5
+        actionReason:
+          type: string
+          example: "User liked the product"
+        errorDetails:
+          type: string
+          example: "Network timeout"
+        metadata:
+          type: object
+
+    ActionType:
+      type: string
+      enum:
+        - CART_ADD
+        - CART_REMOVE
+        - CART_UPDATE
+        - CART_READD
+        - ORDER_COMPLETE
+        - ORDER_CANCEL
+        - ORDER_RETURN_REQUEST
+        - ORDER_RETURN_COMPLETE
+        - SEARCH_BY_KEYWORD
+        - SEARCH_BY_CATEGORY
+        - REVIEW_START
+        - REVIEW_SUBMIT
+        - USER_REGISTER_START
+        - USER_REGISTER_COMPLETE
+        - USER_UPDATE
+        - USER_LOGIN
+        - USER_LOGOUT
+        - USER_DELETE
+
+    ViewHistoryResponse:
+      type: object
+      properties:
+        viewHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewHistory'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    UserActionLogResponse:
+      type: object
+      properties:
+        actionLogs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserActionLog'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 10
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 500
+        error:
+          type: string
+          example: "INTERNAL_SERVER_ERROR"
+        message:
+          type: string
+          example: "An internal server error occurred"
+        path:
+          type: string
+          example: "/api/analytics"
