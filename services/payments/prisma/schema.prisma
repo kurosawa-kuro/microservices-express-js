@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["payments"]
 }
 
 model Payment {
@@ -28,6 +30,7 @@ model Payment {
   refunds         Refund[]
 
   @@map("payments")
+  @@schema("payments")
 }
 
 model Refund {
@@ -43,6 +46,7 @@ model Refund {
   payment         Payment     @relation(fields: [paymentId], references: [id])
 
   @@map("refunds")
+  @@schema("payments")
 }
 
 enum PaymentMethod {
@@ -53,6 +57,8 @@ enum PaymentMethod {
   AMAZON_PAY
   APPLE_PAY
   GOOGLE_PAY
+
+  @@schema("payments")
 }
 
 enum PaymentStatus {
@@ -62,6 +68,8 @@ enum PaymentStatus {
   FAILED
   CANCELLED
   REFUNDED
+
+  @@schema("payments")
 }
 
 enum RefundStatus {
@@ -69,4 +77,6 @@ enum RefundStatus {
   PROCESSING
   COMPLETED
   FAILED
+
+  @@schema("payments")
 }

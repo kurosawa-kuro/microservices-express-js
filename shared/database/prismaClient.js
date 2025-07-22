@@ -6,11 +6,18 @@ class DatabaseConnection {
   }
 
   getClient(databaseName) {
-    if (!this.clients.has(databaseName)) {
+    const env = process.env.NODE_ENV || 'development';
+    const clientKey = `${databaseName}_${env}`;
+    
+    if (!this.clients.has(clientKey)) {
+      const baseUrl = process.env[`DATABASE_URL_${databaseName.toUpperCase()}`] || process.env.DATABASE_URL;
+      
+      const schemaUrl = baseUrl.includes('?schema=') ? baseUrl : `${baseUrl}?schema=${databaseName}`;
+      
       const client = new PrismaClient({
         datasources: {
           db: {
-            url: process.env[`DATABASE_URL_${databaseName.toUpperCase()}`] || process.env.DATABASE_URL
+            url: schemaUrl
           }
         },
         log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
@@ -31,10 +38,10 @@ class DatabaseConnection {
         await client.$disconnect();
       });
 
-      this.clients.set(databaseName, client);
+      this.clients.set(clientKey, client);
     }
 
-    return this.clients.get(databaseName);
+    return this.clients.get(clientKey);
   }
 
   async closeAll() {

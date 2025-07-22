@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["products"]
 }
 
 model Product {
@@ -20,6 +22,7 @@ model Product {
   productCategories ProductCategory[]
 
   @@map("products")
+  @@schema("products")
 }
 
 model Category {
@@ -31,6 +34,7 @@ model Category {
   productCategories ProductCategory[]
 
   @@map("categories")
+  @@schema("products")
 }
 
 model ProductCategory {
@@ -43,4 +47,5 @@ model ProductCategory {
   
   @@id([productId, categoryId])
   @@map("product_categories")
+  @@schema("products")
 }
