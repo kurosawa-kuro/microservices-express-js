@@ -6,6 +6,8 @@ const correlationId = require('../shared/middleware/correlationId');
 const errorHandler = require('../shared/middleware/errorHandler');
 const authMiddleware = require('./middleware/authMiddleware');
 const { requireRole } = require('../shared/middleware/roleMiddleware');
+const { authRateLimit, generalRateLimit } = require('./middleware/rateLimitMiddleware');
+const tokenRefreshService = require('./services/tokenRefreshService');
 const logger = require('../shared/utils/logger');
 const createHealthCheckHandler = require('../shared/utils/healthCheckUtility');
 
@@ -24,6 +26,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(correlationId);
+app.use(generalRateLimit);
 
 app.get('/actuator/health', healthCheckHandler);
 
@@ -49,7 +52,114 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.use('/kurobank/**', authMiddleware);
+app.post('/auth/refresh', authRateLimit, async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      logger.securityWarn('Token refresh attempted without refresh token', {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        correlationId: req.correlationId
+      });
+      
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Refresh token is required',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const isValid = await tokenRefreshService.validateRefreshToken(refreshToken, req.correlationId);
+    if (!isValid) {
+      logger.securityWarn('Invalid refresh token provided', {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        correlationId: req.correlationId
+      });
+      
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Invalid or expired refresh token',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const result = await tokenRefreshService.refreshToken(refreshToken, req.correlationId);
+    
+    if (result.success) {
+      res.status(200).json({
+        message: 'Token refreshed successfully',
+        data: result.data,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(result.error.status || 500).json({
+        error: 'Token Refresh Failed',
+        message: result.error.message,
+        details: result.error.details,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    logger.securityError('Token refresh endpoint error', {
+      error: error.message,
+      stack: error.stack,
+      ip: req.ip,
+      correlationId: req.correlationId
+    });
+    
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Token refresh failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.post('/auth/revoke', authRateLimit, async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Refresh token is required',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const result = await tokenRefreshService.revokeRefreshToken(refreshToken, req.correlationId);
+    
+    if (result.success) {
+      res.status(200).json({
+        message: 'Token revoked successfully',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(500).json({
+        error: 'Token Revocation Failed',
+        message: result.error,
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    logger.securityError('Token revocation endpoint error', {
+      error: error.message,
+      stack: error.stack,
+      ip: req.ip,
+      correlationId: req.correlationId
+    });
+    
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Token revocation failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.use('/kurobank/**', authRateLimit, authMiddleware);
 
 app.use('/kurobank/accounts/**', 
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
