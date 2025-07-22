@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const { LoansDto } = require('../../shared/types');
+const { LoansDto } = require('../../../../shared/types');
 const logger = require('../../../shared/utils/logger');
 
 class LoansService {

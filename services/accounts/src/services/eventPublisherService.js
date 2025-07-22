@@ -1,5 +1,5 @@
 const { Kafka } = require('kafkajs');
-const { AccountsMsgDto } = require('../../shared/types');
+const { AccountsMsgDto } = require('../../../../shared/types');
 const logger = require('../../../shared/utils/logger');
 
 class EventPublisherService {

@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const { CustomerDto } = require('../../shared/types');
+const { CustomerDto } = require('../../../../shared/types');
 const EventPublisherService = require('./eventPublisherService');
 const logger = require('../../../shared/utils/logger');
 
