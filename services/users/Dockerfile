@@ -6,7 +6,7 @@ COPY package*.json ./
 COPY shared/ ./shared/
 COPY services/users/package*.json ./services/users/
 
-RUN cd services/users && npm install
+RUN cd services/users && npm ci --prefer-offline --no-audit --no-fund
 
 COPY services/users/ ./services/users/
 

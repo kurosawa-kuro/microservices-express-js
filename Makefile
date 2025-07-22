@@ -92,7 +92,27 @@ restart-service: ## Restart specific service (usage: make restart-service SERVIC
 	@docker-compose -f $(COMPOSE_FILE) restart $(SERVICE)-service
 
 # Development
-dev: ## Start development environment
+dev-infra: ## Start infrastructure services only (fast startup)
+	@echo "Starting infrastructure services..."
+	@docker-compose -f $(COMPOSE_FILE) up -d postgres zookeeper kafka
+	@echo "Waiting for services to be ready..."
+	@sleep 10
+	@echo "Infrastructure is ready!"
+	@echo "Use 'make dev-core' for core services or 'make dev-service SERVICE=<name>' for individual services"
+
+dev-core: ## Start core services (auth, users, gateway)
+	@echo "Starting core services..."
+	@$(MAKE) dev-infra
+	@docker-compose -f $(COMPOSE_FILE) up -d keycloak auth-service users-service gateway-service
+	@echo "Core services started!"
+
+dev-minimal: ## Start minimal development environment (lightweight profile)
+	@echo "Starting minimal development environment..."
+	@docker-compose -f docker-compose.dev.yml up -d
+	@echo "Minimal services started! (postgres, kafka, auth, users, gateway)"
+	@echo "Check status with: docker-compose -f docker-compose.dev.yml ps"
+
+dev: ## Start development environment (legacy - use dev-infra for faster startup)
 	@echo "Starting development environment..."
 	@docker-compose -f $(COMPOSE_FILE) up -d zookeeper kafka
 	@echo "Waiting for Kafka to be ready..."
