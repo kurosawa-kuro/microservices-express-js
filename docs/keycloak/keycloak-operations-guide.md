@@ -1,4 +1,4 @@
-# Keycloak 使い方ガイド
+# Keycloak 運用・管理ガイド
 
 ## 目次
 
@@ -9,8 +9,11 @@
 5. [クライアント管理](#5-クライアント管理)
 6. [認証フロー](#6-認証フロー)
 7. [API連携](#7-api連携)
-8. [トラブルシューティング](#8-トラブルシューティング)
-9. [ベストプラクティス](#9-ベストプラクティス)
+8. [セキュリティ機能](#8-セキュリティ機能)
+9. [運用・監視](#9-運用監視)
+10. [ベストプラクティス](#10-ベストプラクティス)
+
+---
 
 ## 1. Keycloakとは
 
@@ -21,6 +24,8 @@ KeycloakはRed Hatが開発したオープンソースの認証・認可管理�
 - **ソーシャルログイン**: Google、Facebook、GitHubなどとの連携
 - **多要素認証 (MFA)**: セキュリティの強化
 - **LDAP/Active Directory連携**: 既存の認証システムとの統合
+
+---
 
 ## 2. 基本概念
 
@@ -60,6 +65,8 @@ Application Realm（アプリケーションレルム）
 
 システムにアクセスする個人を表します。
 
+---
+
 ## 3. 管理コンソールの使い方
 
 ### 3.1 アクセス方法
@@ -94,6 +101,8 @@ http://localhost:8181/admin
 1. 右上のユーザー名をクリック
 2. 「Manage account」を選択
 3. 「Localization」タブで「日本語」を選択
+
+---
 
 ## 4. ユーザー管理
 
@@ -153,6 +162,8 @@ http://localhost:8181/admin
     ├── 開発部
     └── インフラ部
 ```
+
+---
 
 ## 5. クライアント管理
 
@@ -230,6 +241,8 @@ JWTトークンに含める情報のカスタマイズ：
 }
 ```
 
+---
+
 ## 6. 認証フロー
 
 ### 6.1 Authorization Code Flow
@@ -287,6 +300,8 @@ curl -X POST "http://localhost:8181/realms/kurobank/protocol/openid-connect/toke
   -d "grant_type=client_credentials"
 ```
 
+---
+
 ## 7. API連携
 
 ### 7.1 Admin REST API
@@ -340,25 +355,7 @@ curl -X POST "http://localhost:8181/admin/realms/kurobank/users/{userId}/role-ma
   ]'
 ```
 
-### 7.2 Account Management API
-
-```bash
-# ユーザー自身の情報取得
-curl -X GET "http://localhost:8181/realms/kurobank/account" \
-  -H "Authorization: Bearer $USER_TOKEN"
-
-# パスワード変更
-curl -X POST "http://localhost:8181/realms/kurobank/account/credentials/password" \
-  -H "Authorization: Bearer $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "currentPassword": "old_password",
-    "newPassword": "new_password",
-    "confirmation": "new_password"
-  }'
-```
-
-### 7.3 Well-known エンドポイント
+### 7.2 Well-known エンドポイント
 
 ```bash
 # OpenID Connect Discovery
@@ -375,71 +372,132 @@ curl http://localhost:8181/realms/kurobank/.well-known/openid-configuration
 }
 ```
 
-## 8. トラブルシューティング
+---
 
-### 8.1 よくある問題と解決方法
+## 8. セキュリティ機能
 
-#### ログインできない
+### 8.1 JWTトークンキャッシング
+- **目的**: JWT検証のパフォーマンス向上
+- **実装**: メモリ内キャッシュ（node-cache）を使用
+- **TTL**: トークンの有効期限または最大300秒
+- **キャッシュキー**: トークンのSHA256ハッシュ（セキュリティ確保）
+
+### 8.2 レート制限
+- **認証エンドポイント**: 10リクエスト/分、ブロック時間5分
+- **一般エンドポイント**: 100リクエスト/分、ブロック時間1分
+- **実装**: `rate-limiter-flexible`パッケージ使用
+- **設定**: 環境変数で調整可能
+
+### 8.3 監査ログ
+- **ログファイル**: `security.log`（専用セキュリティログ）
+- **記録イベント**: 
+  - 認証成功/失敗
+  - 認可失敗
+  - レート制限違反
+  - トークンリフレッシュ
+- **構造化ログ**: JSON形式、相関ID付き
+
+### 8.4 トークンリフレッシュ機能
+- **エンドポイント**: `POST /auth/refresh`
+- **機能**: Keycloakリフレッシュトークンによる自動更新
+- **検証**: リフレッシュトークンの有効性確認
+- **取り消し**: `POST /auth/revoke`でトークン無効化
+
+### 8.5 セキュリティ機能の使用方法
+
+#### トークンリフレッシュ
 
 ```bash
-# チェックリスト
-□ ユーザー名/パスワードが正しいか
-□ ユーザーが有効化されているか
-□ Realmが正しいか
-□ クライアントが有効化されているか
-
-# ログ確認
-docker logs keycloak | grep ERROR
+# リフレッシュトークンを使用してアクセストークンを更新
+curl -X POST "http://localhost:8072/auth/refresh" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "YOUR_REFRESH_TOKEN"
+  }'
 ```
 
-#### トークン検証エラー
+#### トークン取り消し
 
 ```bash
-# JWTトークンのデコード（jwt.ioでも可能）
-echo $TOKEN | cut -d. -f2 | base64 -d | jq
-
-# 確認ポイント
-□ exp（有効期限）が切れていないか
-□ iss（発行者）が正しいか
-□ aud（対象者）が正しいか
+# リフレッシュトークンを無効化
+curl -X POST "http://localhost:8072/auth/revoke" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "YOUR_REFRESH_TOKEN"
+  }'
 ```
 
-#### CORS エラー
+#### 監査ログの確認
 
-```javascript
-// Keycloakクライアント設定
-Web Origins: 
-- http://localhost:3000
-- https://app.example.com
+```bash
+# セキュリティイベントログの確認
+tail -f security.log | grep "securityEvent"
 
-// またはワイルドカード（開発環境のみ）
-Web Origins: *
+# 特定のイベントタイプでフィルタ
+grep "auth_failure" security.log
+grep "rate_limit_exceeded" security.log
 ```
 
-### 8.2 デバッグモード
+#### レート制限の設定
+
+環境変数で調整可能：
 
 ```yaml
 # docker-compose.yml
 environment:
-  KC_LOG_LEVEL: debug
-  KC_LOG_CONSOLE_COLOR: true
+  - AUTH_RATE_LIMIT_REQUESTS=10      # 認証エンドポイント: リクエスト数/分
+  - AUTH_RATE_LIMIT_WINDOW=60        # 認証エンドポイント: 時間窓（秒）
+  - AUTH_RATE_LIMIT_BLOCK=300        # 認証エンドポイント: ブロック時間（秒）
+  - GENERAL_RATE_LIMIT_REQUESTS=100  # 一般エンドポイント: リクエスト数/分
+  - GENERAL_RATE_LIMIT_WINDOW=60     # 一般エンドポイント: 時間窓（秒）
+  - GENERAL_RATE_LIMIT_BLOCK=60      # 一般エンドポイント: ブロック時間（秒）
 ```
 
-### 8.3 パフォーマンス問題
+---
+
+## 9. 運用・監視
+
+### 9.1 バックアップ
 
 ```bash
-# JVMメモリ設定
-JAVA_OPTS_APPEND: "-Xms1024m -Xmx2048m"
+# Realmエクスポート
+docker exec keycloak /opt/keycloak/bin/kc.sh export \
+  --file /tmp/realm-export.json \
+  --realm kurobank
 
-# データベース接続プール
-KC_DB_POOL_INITIAL_SIZE: 10
-KC_DB_POOL_MIN_SIZE: 10
-KC_DB_POOL_MAX_SIZE: 100
+# データベースバックアップ
+pg_dump -h localhost -U keycloak keycloak > keycloak_backup.sql
 ```
 
-## 9. ベストプラクティス
+### 9.2 監視
 
-### 9.1 セキュリティ
+```yaml
+# Prometheusメトリクス有効化
+KC_METRICS_ENABLED: true
+
+# ヘルスチェックエンドポイント
+- /health/ready
+- /health/live
+- /metrics
+```
+
+### 9.3 ログ管理
+
+```bash
+# 全サービスのログ確認
+docker-compose logs -f
+
+# 特定サービスのログ確認
+docker-compose logs -f keycloak
+docker-compose logs -f gateway-service
+docker-compose logs -f postgres
+```
+
+---
+
+## 10. ベストプラクティス
+
+### 10.1 セキュリティ
 
 #### パスワードポリシー
 
@@ -465,35 +523,35 @@ Realm Settings → Security Defenses:
 - Max Wait: 15 minutes
 ```
 
-### 9.2 運用
+### 10.2 本番環境の考慮事項
 
-#### バックアップ
+1. **高可用性**
+   - Keycloakクラスタリング
+   - データベースレプリケーション
+   - ロードバランサー設定
 
-```bash
-# Realmエクスポート
-docker exec keycloak /opt/keycloak/bin/kc.sh export \
-  --file /tmp/realm-export.json \
-  --realm kurobank
+2. **セキュリティ強化**
+   - HTTPS必須
+   - ファイアウォール設定
+   - 定期的なセキュリティアップデート
 
-# データベースバックアップ
-pg_dump -h localhost -U keycloak keycloak > keycloak_backup.sql
-```
+3. **パフォーマンス最適化**
+   - キャッシュ設定
+   - セッション管理
+   - データベースインデックス
 
-#### 監視
+4. **監査とコンプライアンス**
+   - イベントログ記録
+   - アクセスログ分析
+   - 定期的な権限レビュー
 
-```yaml
-# Prometheusメトリクス有効化
-KC_METRICS_ENABLED: true
+### 10.3 トークン設定
 
-# ヘルスチェックエンドポイント
-- /health/ready
-- /health/live
-- /metrics
-```
+- アクセストークンの有効期限: 15分（推奨）
+- リフレッシュトークンの有効期限: 30日（推奨）
+- セッションタイムアウト: 30分（推奨）
 
-### 9.3 開発環境
-
-#### Docker Compose設定例
+### 10.4 開発環境設定例
 
 ```yaml
 version: '3.8'
@@ -545,30 +603,89 @@ networks:
     driver: bridge
 ```
 
-### 9.4 本番環境の考慮事項
+---
 
-1. **高可用性**
-   - Keycloakクラスタリング
-   - データベースレプリケーション
-   - ロードバランサー設定
+## 11. トラブルシューティング
 
-2. **セキュリティ強化**
-   - HTTPS必須
-   - ファイアウォール設定
-   - 定期的なセキュリティアップデート
+### 11.1 よくある問題と解決方法
 
-3. **パフォーマンス最適化**
-   - キャッシュ設定
-   - セッション管理
-   - データベースインデックス
+#### ログインできない
 
-4. **監査とコンプライアンス**
-   - イベントログ記録
-   - アクセスログ分析
-   - 定期的な権限レビュー
+```bash
+# チェックリスト
+□ ユーザー名/パスワードが正しいか
+□ ユーザーが有効化されているか
+□ Realmが正しいか
+□ クライアントが有効化されているか
+
+# ログ確認
+docker logs keycloak | grep ERROR
+```
+
+#### トークン検証エラー
+
+```bash
+# JWTトークンのデコード（jwt.ioでも可能）
+echo $TOKEN | cut -d. -f2 | base64 -d | jq
+
+# 確認ポイント
+□ exp（有効期限）が切れていないか
+□ iss（発行者）が正しいか
+□ aud（対象者）が正しいか
+```
+
+#### CORS エラー
+
+```javascript
+// Keycloakクライアント設定
+Web Origins: 
+- http://localhost:3000
+- https://app.example.com
+
+// またはワイルドカード（開発環境のみ）
+Web Origins: *
+```
+
+#### レート制限エラー
+
+```bash
+# レート制限状況の確認
+curl -v "http://localhost:8072/kurobank/accounts"
+# Retry-Afterヘッダーを確認
+```
+
+#### トークンキャッシュ問題
+
+```bash
+# キャッシュ統計の確認（ログで確認）
+grep "cache_hit\|cache_miss" combined.log
+```
+
+### 11.2 デバッグモード
+
+```yaml
+# docker-compose.yml
+environment:
+  KC_LOG_LEVEL: debug
+  KC_LOG_CONSOLE_COLOR: true
+```
+
+### 11.3 パフォーマンス問題
+
+```bash
+# JVMメモリ設定
+JAVA_OPTS_APPEND: "-Xms1024m -Xmx2048m"
+
+# データベース接続プール
+KC_DB_POOL_INITIAL_SIZE: 10
+KC_DB_POOL_MIN_SIZE: 10
+KC_DB_POOL_MAX_SIZE: 100
+```
+
+---
 
 ## まとめ
 
-Keycloakは強力な認証・認可システムですが、適切な設定と運用が重要です。このガイドを参考に、セキュアで使いやすい認証システムを構築してください。
+Keycloakは強力な認証・認可システムですが、適切な設定と運用が重要です。このガイドを参考に、セキュアで使いやすい認証システムを構築・運用してください。
 
 詳細な情報は[公式ドキュメント](https://www.keycloak.org/documentation)を参照してください。

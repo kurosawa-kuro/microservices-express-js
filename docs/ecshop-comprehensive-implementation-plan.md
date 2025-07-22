@@ -1,15 +1,29 @@
-# マイクロサービス アーキテクチャ実装計画
+# ECShop 包括的実装プラン
 
-## 現状分析
+## 概要
 
-### 現在の構成
-- **Banking System**: accounts, cards, loans サービス
-- **Gateway Service**: API ゲートウェイとして機能
-- **Message Service**: Kafka による非同期メッセージング
-- **共通**: cache, circuit-breaker, middleware, health check等
+銀行カードローンシステムからECショップアプリケーションへの移行を、段階的かつ実践的に実施するための統合ドキュメントです。
 
-### 新規要件
-EC サイトの統合データベーススキーマを実装し、AI/ML 機能を含む EC プラットフォームを構築する。
+### 移行の目的
+
+- 金融サービスからeコマースプラットフォームへの転換
+- 既存Keycloakを活用した安全な認証システムの継続利用
+- 機械学習対応のデータ構造（推薦システム、需要予測など）
+- スケーラブルなマイクロサービスアーキテクチャの維持
+
+### 主な変更点
+
+| 項目 | 現在（銀行システム） | 移行後（ECショップ） |
+|------|---------------------|---------------------|
+| 認証 | Keycloak + PostgreSQL | Keycloak |
+| データベース | SQLite（各サービス） | PostgreSQL（統合） |
+| 主要エンティティ | Customer, Account, Card, Loan | User, Product, Order, Cart |
+| ビジネスロジック | 金融取引処理 | 商品購入・在庫管理 |
+| メッセージング | Kafka（アカウントイベント） | Kafka（注文・在庫イベント） |
+
+**注意**: 当初予定していたAWS Cognitoへの移行は、実装時の複雑さとセキュリティリスクを考慮し、既存のKeycloakを継続利用することに変更しました。
+
+---
 
 ## マイクロサービス境界の設計
 
@@ -375,74 +389,7 @@ enum DisplayType {
 }
 ```
 
-## データ戦略
-
-### 1. データ分散戦略
-
-#### 1.1 サービス間データアクセス
-- **直接データベースアクセス禁止**: 各サービスは自分のデータベースのみアクセス
-- **API経由のデータ取得**: 他サービスのデータは REST API または GraphQL で取得
-- **イベント駆動アーキテクチャ**: 重要な状態変更はイベントで他サービスに通知
-
-#### 1.2 冗長データ戦略
-- **パフォーマンス重視**: 頻繁にアクセスされるデータは冗長化
-- **整合性管理**: イベントソーシングで最終的整合性を保証
-- **データ同期**: Kafka イベントでリアルタイム同期
-
-### 2. サービス間通信
-
-#### 2.1 同期通信 (REST API)
-- ユーザー認証・認可 (Authentication Service → Gateway)
-- ユーザー情報取得 (各サービス → User Profile Service)
-- 商品情報取得 (Shopping Cart → Product Catalog)
-- 決済処理 (Payment Service → 外部決済API)
-- 注文処理 (Order Management → Product Catalog, User Profile Service, Payment Service)
-
-#### 2.2 非同期通信 (Kafka Events)
-```javascript
-// イベント例
-{
-  eventType: "USER_AUTHENTICATED",
-  data: { userId, email, Id },
-  timestamp: "2025-07-22T10:00:00Z"
-}
-
-{
-  eventType: "USER_PROFILE_CREATED",
-  data: { userId, displayName, email },
-  timestamp: "2025-07-22T10:00:00Z"
-}
-
-{
-  eventType: "PAYMENT_COMPLETED",
-  data: { paymentId, orderId, userId, amount },
-  timestamp: "2025-07-22T10:00:00Z"
-}
-
-{
-  eventType: "ORDER_COMPLETED",
-  data: { orderId, userId, items, totalAmount },
-  timestamp: "2025-07-22T10:00:00Z"
-}
-
-{
-  eventType: "PRODUCT_VIEWED",
-  data: { userId, productId, timestamp },
-  timestamp: "2025-07-22T10:00:00Z"
-}
-```
-
-### 3. データベース設計
-
-#### 3.1 PostgreSQL インスタンス分離
-- 各マイクロサービスに専用PostgreSQLインスタンス
-- 接続文字列を環境変数で管理
-- データベース レベルでの完全分離
-
-#### 3.2 共有データの扱い
-- **参照データ**: 商品ID、ユーザーIDなど
-- **冗長化**: 必要に応じて商品名、価格など
-- **キャッシュ**: Redis で頻繁アクセスデータをキャッシュ
+---
 
 # ECShop実装プラン（三段階）
 
@@ -618,6 +565,77 @@ AIと機械学習を活用した高度な分析・パーソナライゼーショ
 
 ---
 
+## データ戦略
+
+### 1. データ分散戦略
+
+#### 1.1 サービス間データアクセス
+- **直接データベースアクセス禁止**: 各サービスは自分のデータベースのみアクセス
+- **API経由のデータ取得**: 他サービスのデータは REST API または GraphQL で取得
+- **イベント駆動アーキテクチャ**: 重要な状態変更はイベントで他サービスに通知
+
+#### 1.2 冗長データ戦略
+- **パフォーマンス重視**: 頻繁にアクセスされるデータは冗長化
+- **整合性管理**: イベントソーシングで最終的整合性を保証
+- **データ同期**: Kafka イベントでリアルタイム同期
+
+### 2. サービス間通信
+
+#### 2.1 同期通信 (REST API)
+- ユーザー認証・認可 (Authentication Service → Gateway)
+- ユーザー情報取得 (各サービス → User Profile Service)
+- 商品情報取得 (Shopping Cart → Product Catalog)
+- 決済処理 (Payment Service → 外部決済API)
+- 注文処理 (Order Management → Product Catalog, User Profile Service, Payment Service)
+
+#### 2.2 非同期通信 (Kafka Events)
+```javascript
+// イベント例
+{
+  eventType: "USER_AUTHENTICATED",
+  data: { userId, email, keycloakId },
+  timestamp: "2025-07-22T10:00:00Z"
+}
+
+{
+  eventType: "USER_PROFILE_CREATED",
+  data: { userId, displayName, email },
+  timestamp: "2025-07-22T10:00:00Z"
+}
+
+{
+  eventType: "PAYMENT_COMPLETED",
+  data: { paymentId, orderId, userId, amount },
+  timestamp: "2025-07-22T10:00:00Z"
+}
+
+{
+  eventType: "ORDER_COMPLETED",
+  data: { orderId, userId, items, totalAmount },
+  timestamp: "2025-07-22T10:00:00Z"
+}
+
+{
+  eventType: "PRODUCT_VIEWED",
+  data: { userId, productId, timestamp },
+  timestamp: "2025-07-22T10:00:00Z"
+}
+```
+
+### 3. データベース設計
+
+#### 3.1 PostgreSQL インスタンス分離
+- 各マイクロサービスに専用PostgreSQLインスタンス
+- 接続文字列を環境変数で管理
+- データベース レベルでの完全分離
+
+#### 3.2 共有データの扱い
+- **参照データ**: 商品ID、ユーザーIDなど
+- **冗長化**: 必要に応じて商品名、価格など
+- **キャッシュ**: Redis で頻繁アクセスデータをキャッシュ
+
+---
+
 ## リソース・技術要件
 
 ### 開発チーム構成（推奨）
@@ -630,77 +648,32 @@ AIと機械学習を活用した高度な分析・パーソナライゼーショ
 - **段階2**: 決済サービス連携、高可用性構成
 - **段階3**: データウェアハウス、機械学習基盤
 
-## 従来の実装段階
+### 技術スタック
 
-### Phase 1: 基盤構築 (2-3週間)
-1. **Authentication Service** 実装
-   -  連携
-   - JWT トークン管理
-   - ロール・権限管理
+#### バックエンド
+- **言語**: Node.js (TypeScript)
+- **フレームワーク**: Express.js
+- **データベース**: PostgreSQL
+- **ORM**: Prisma
+- **メッセージング**: Apache Kafka
+- **キャッシュ**: Redis
+- **認証**: Keycloak (**非Cognito**)
+- **決済**: Stripe, PayPal
 
-2. **User Profile Service** 実装
-   - ユーザープロフィール管理
-   - 設定・住所管理
-   - Authentication Serviceとの連携
+#### インフラストラクチャ
+- **コンテナ**: Docker
+- **オーケストレーション**: Docker Compose (開発), Kubernetes (本番)
+- **API Gateway**: 既存 Gateway Service
+- **監視**: Prometheus + Grafana
+- **ログ**: ELK Stack
 
-3. **Product Catalog Service** 実装
-   - 商品・カテゴリー CRUD
-   - 検索機能
-   - 商品画像管理
+#### CI/CD
+- **バージョン管理**: Git
+- **CI/CD**: GitHub Actions
+- **テスト**: Jest + Supertest
+- **コード品質**: ESLint, Prettier
 
-4. **Gateway Service** 拡張
-   - Authentication Service 連携
-   - ルーティング設定
-   - レート制限
-
-### Phase 2: コア機能実装 (3-4週間)
-1. **Shopping Cart Service** 実装
-   - セッション管理
-   - カート操作 API
-   - 在庫チェック連携
-
-2. **Payment Service** 実装
-   - 外部決済API連携 (Stripe/PayPal)
-   - 決済処理フロー
-   - 返金・キャンセル処理
-   - PCI DSS準拠のセキュリティ
-
-3. **Order Management Service** 実装
-   - 注文処理フロー
-   - Payment Service連携
-   - 注文履歴管理
-
-4. **Kafka イベント** 実装
-   - イベントスキーマ定義
-   - プロデューサー・コンシューマー実装
-
-### Phase 3: 分析・パーソナライゼーション (4-5週間)
-1. **Analytics Service** 実装
-   - ユーザー行動ログ収集
-   - データウェアハウス連携準備
-   - 基本的な分析API
-
-2. **Content Management Service** 実装
-   - トップページ管理
-   - プロモーション管理
-   - A/Bテスト準備
-
-3. **AI/ML 機能** 実装準備
-   - レコメンデーションエンジン基盤
-   - データパイプライン構築
-
-### Phase 4: 高度な機能 (3-4週間)
-1. **レコメンデーション機能**
-   - 協調フィルタリング
-   - コンテンツベースフィルタリング
-
-2. **検索・フィルタリング強化**
-   - Elasticsearch 導入検討
-   - 高度な検索機能
-
-3. **パフォーマンス最適化**
-   - キャッシング戦略
-   - データベース最適化
+---
 
 ## 課題と対応策
 
@@ -734,34 +707,11 @@ AIと機械学習を活用した高度な分析・パーソナライゼーショ
 - Payment Service での PCI DSS 準拠
 - 決済情報の暗号化・トークン化
 
-## 技術スタック
-
-### バックエンド
-- **言語**: Node.js (TypeScript)
-- **フレームワーク**: Express.js
-- **データベース**: PostgreSQL
-- **ORM**: Prisma
-- **メッセージング**: Apache Kafka
-- **キャッシュ**: Redis
-- **認証**: Keycloak (**非Cognito**)
-- **決済**: Stripe, PayPal
-
-### インフラストラクチャ
-- **コンテナ**: Docker
-- **オーケストレーション**: Docker Compose (開発), Kubernetes (本番)
-- **API Gateway**: 既存 Gateway Service
-- **監視**: Prometheus + Grafana
-- **ログ**: ELK Stack
-
-### CI/CD
-- **バージョン管理**: Git
-- **CI/CD**: GitHub Actions
-- **テスト**: Jest + Supertest
-- **コード品質**: ESLint, Prettier
+---
 
 ## まとめ
 
-この計画は、現在の banking システムのマイクロサービス アーキテクチャを活用しつつ、EC サイトの要件に対応する包括的な設計です。**8つのマイクロサービス**に分散することで、以下を実現します：
+この統合プランは、現在の banking システムのマイクロサービス アーキテクチャを活用しつつ、EC サイトの要件に対応する包括的な設計です。**8つのマイクロサービス**に分散することで、以下を実現します：
 
 ### アーキテクチャの利点
 1. **関心の分離**: Authentication/User Profile/Payment を独立化
@@ -771,9 +721,13 @@ AIと機械学習を活用した高度な分析・パーソナライゼーショ
 5. **可用性**: 一部サービス障害の影響範囲限定
 
 ### 段階的実装のメリット
-- **Phase 1**: 認証基盤とカタログの確立
-- **Phase 2**: 決済・注文処理のコア機能
-- **Phase 3**: AI/ML による高度な機能
-- **Phase 4**: パフォーマンス最適化
+- **段階1**: 認証基盤とカタログの確立
+- **段階2**: 決済・注文処理のコア機能
+- **段階3**: AI/ML による高度な機能
 
 各フェーズでの成果物と検証ポイントを明確にし、継続的な改善を通じてスケーラブルで保守性の高いシステムを実現します。
+
+### 重要な技術的決定
+1. **Keycloak継続利用**: AWS Cognitoの複雑さを回避し、既存の安定したシステムを活用
+2. **PostgreSQL統合**: SQLiteから移行し、本格的なRDBMSでデータ整合性を確保
+3. **段階的実装**: リスクを最小化しながら価値提供を段階的に実現
