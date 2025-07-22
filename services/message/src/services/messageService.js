@@ -1,5 +1,5 @@
 const logger = require('../../../../shared/utils/logger');
-const { AccountsMsgDto } = require('../../../shared/types');
+const { AccountsMsgDto } = require('../../../../shared/types');
 
 class MessageService {
   
