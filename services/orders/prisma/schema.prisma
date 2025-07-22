@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
 }
 
@@ -10,30 +10,28 @@ datasource db {
 }
 
 model Order {
-  id          Int       @id @default(autoincrement())
-  userId      String
-  totalAmount Float
-  status      OrderStatus @default(PENDING)
+  id              Int         @id @default(autoincrement())
+  userId          String
+  totalAmount     Float
+  status          OrderStatus @default(PENDING)
   shippingAddress Json?
-  orderedAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  orderItems  OrderItem[]
+  orderedAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
 
   @@map("orders")
   @@schema("orders")
 }
 
 model OrderItem {
-  id          Int       @id @default(autoincrement())
-  orderId     Int
-  productId   Int
-  quantity    Int
-  price       Float
-  productName String?
+  id           Int     @id @default(autoincrement())
+  orderId      Int
+  productId    Int
+  quantity     Int
+  price        Float
+  productName  String?
   productImage String?
-  
-  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
   @@schema("orders")

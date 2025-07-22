@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
 }
 
@@ -10,40 +10,36 @@ datasource db {
 }
 
 model Payment {
-  id              String      @id @default(uuid())
-  orderId         Int
-  userId          String
-  amount          Float
-  currency        String      @default("JPY")
-  paymentMethod   PaymentMethod
-  status          PaymentStatus @default(PENDING)
-  
+  id                String        @id @default(uuid())
+  orderId           Int
+  userId            String
+  amount            Float
+  currency          String        @default("JPY")
+  paymentMethod     PaymentMethod
+  status            PaymentStatus @default(PENDING)
   externalPaymentId String?
   paymentIntentId   String?
-  
-  paymentDetails  Json?
-  failureReason   String?
-  processedAt     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  
-  refunds         Refund[]
+  paymentDetails    Json?
+  failureReason     String?
+  processedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  refunds           Refund[]
 
   @@map("payments")
   @@schema("payments")
 }
 
 model Refund {
-  id              String      @id @default(uuid())
-  paymentId       String
-  amount          Float
-  reason          String
-  status          RefundStatus @default(PENDING)
+  id               String       @id @default(uuid())
+  paymentId        String
+  amount           Float
+  reason           String
+  status           RefundStatus @default(PENDING)
   externalRefundId String?
-  processedAt     DateTime?
-  createdAt       DateTime    @default(now())
-  
-  payment         Payment     @relation(fields: [paymentId], references: [id])
+  processedAt      DateTime?
+  createdAt        DateTime     @default(now())
+  payment          Payment      @relation(fields: [paymentId], references: [id])
 
   @@map("refunds")
   @@schema("payments")

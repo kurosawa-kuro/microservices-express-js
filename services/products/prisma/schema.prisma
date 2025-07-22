@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
 }
 
@@ -10,15 +10,14 @@ datasource db {
 }
 
 model Product {
-  id              Int       @id @default(autoincrement())
-  name            String
-  price           Float
-  rating          Float     @default(0)
-  image           String?
-  description     String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  id                Int               @id @default(autoincrement())
+  name              String
+  price             Float
+  rating            Float             @default(0)
+  image             String?
+  description       String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   productCategories ProductCategory[]
 
   @@map("products")
@@ -26,11 +25,10 @@ model Product {
 }
 
 model Category {
-  id                Int       @id @default(autoincrement())
-  name              String    @unique
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
+  id                Int               @id @default(autoincrement())
+  name              String            @unique
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   productCategories ProductCategory[]
 
   @@map("categories")
@@ -38,13 +36,12 @@ model Category {
 }
 
 model ProductCategory {
-  productId       Int
-  categoryId      Int
-  assignedAt      DateTime  @default(now())
-  
-  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
+  productId  Int
+  categoryId Int
+  assignedAt DateTime @default(now())
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   @@id([productId, categoryId])
   @@map("product_categories")
   @@schema("products")
