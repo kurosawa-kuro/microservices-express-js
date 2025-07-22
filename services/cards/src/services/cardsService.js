@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
-const { CardsDto } = require('../../shared/types');
+const { CardsDto } = require('../../../shared/types');
 const logger = require('../../../shared/utils/logger');
 
 class CardsService {
