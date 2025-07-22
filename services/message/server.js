@@ -7,7 +7,7 @@ const kafkaConsumer = new KafkaConsumer();
 
 kafkaConsumer.start().catch(error => {
   logger.error('Failed to start Kafka consumer:', error);
-  process.exit(1);
+  logger.warn('Continuing without Kafka consumer for local development');
 });
 
 const server = app.listen(PORT, () => {
