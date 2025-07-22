@@ -1,0 +1,289 @@
+openapi: 3.0.3
+info:
+  title: Cloud-Shop Payments Service API
+  description: Payment processing and management service for ECShop
+  version: 1.0.0
+  contact:
+    name: Cloud-Shop Team
+    email: support@cloud-shop.com
+
+servers:
+  - url: http://localhost:8086/cloud-shop/payments
+    description: Local development server
+  - url: https://api.cloud-shop.com/payments
+    description: Production server
+
+paths:
+  /process:
+    post:
+      operationId: processPayment
+      summary: Process a payment
+      description: Process a payment for an order using the specified payment method
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '201':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Invalid payment request
+        '402':
+          description: Payment failed
+        '500':
+          description: Internal server error
+
+  /payments/{paymentId}:
+    get:
+      operationId: getPayment
+      summary: Get payment details
+      description: Retrieve details of a specific payment
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Payment details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+        '500':
+          description: Internal server error
+
+  /payments/{paymentId}/refund:
+    post:
+      operationId: refundPayment
+      summary: Refund a payment
+      description: Process a full or partial refund for a payment
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+      responses:
+        '201':
+          description: Refund processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+        '400':
+          description: Invalid refund request
+        '404':
+          description: Payment not found
+        '500':
+          description: Internal server error
+
+  /history/{userId}:
+    get:
+      operationId: getPaymentHistory
+      summary: Get payment history for a user
+      description: Retrieve payment history for a specific user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Payment history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentHistoryResponse'
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    PaymentRequest:
+      type: object
+      required:
+        - orderId
+        - userId
+        - amount
+        - paymentMethod
+      properties:
+        orderId:
+          type: integer
+          description: ID of the order being paid for
+        userId:
+          type: string
+          description: ID of the user making the payment
+        amount:
+          type: number
+          format: float
+          description: Payment amount
+        currency:
+          type: string
+          default: "JPY"
+          description: Payment currency
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
+        paymentDetails:
+          type: object
+          description: Payment method specific details (encrypted)
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: integer
+        userId:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+        paymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        externalPaymentId:
+          type: string
+          nullable: true
+        paymentIntentId:
+          type: string
+          nullable: true
+        failureReason:
+          type: string
+          nullable: true
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        refunds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Refund'
+
+    RefundRequest:
+      type: object
+      required:
+        - amount
+        - reason
+      properties:
+        amount:
+          type: number
+          format: float
+          description: Refund amount
+        reason:
+          type: string
+          description: Reason for the refund
+
+    Refund:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: float
+        reason:
+          type: string
+        status:
+          $ref: '#/components/schemas/RefundStatus'
+        externalRefundId:
+          type: string
+          nullable: true
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    PaymentHistoryResponse:
+      type: object
+      properties:
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+
+    PaymentMethod:
+      type: string
+      enum:
+        - CREDIT_CARD
+        - DEBIT_CARD
+        - PAYPAL
+        - BANK_TRANSFER
+        - AMAZON_PAY
+        - APPLE_PAY
+        - GOOGLE_PAY
+
+    PaymentStatus:
+      type: string
+      enum:
+        - PENDING
+        - PROCESSING
+        - COMPLETED
+        - FAILED
+        - CANCELLED
+        - REFUNDED
+
+    RefundStatus:
+      type: string
+      enum:
+        - PENDING
+        - PROCESSING
+        - COMPLETED
+        - FAILED

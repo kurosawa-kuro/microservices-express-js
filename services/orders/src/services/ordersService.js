@@ -1,11 +1,13 @@
-const { getOrdersClient } = require('../../../../shared/database/prismaClient');
+const { PrismaClient } = require('@prisma/client');
 const logger = require('../../../../shared/utils/logger');
 const axios = require('axios');
 const KafkaProducer = require('../kafka/kafkaProducer');
 
 class OrdersService {
   constructor() {
-    this.prisma = getOrdersClient();
+    this.prisma = new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error']
+    });
     this.cartServiceUrl = process.env.CART_SERVICE_URL || 'http://cart-service:8084';
     this.productsServiceUrl = process.env.PRODUCTS_SERVICE_URL || 'http://products-service:8083';
     this.kafkaProducer = new KafkaProducer();

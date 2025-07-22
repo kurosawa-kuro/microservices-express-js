@@ -5,11 +5,12 @@
   "private": true,
   "workspaces": [
     "services/auth",
-    "services/users", 
+    "services/users",
     "services/gateway",
     "services/products",
     "services/cart",
     "services/orders",
+    "services/payments",
     "services/message",
     "shared"
   ],
@@ -24,7 +25,15 @@
     "lint": "npm run lint --workspaces",
     "clean": "npm run clean --workspaces"
   },
-  "keywords": ["microservices", "express", "nodejs", "ecommerce"],
+  "keywords": [
+    "microservices",
+    "express",
+    "nodejs",
+    "ecommerce"
+  ],
   "author": "Cloud-Shop Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^4.0.5"
+  }
 }

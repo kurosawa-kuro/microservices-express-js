@@ -53,5 +53,6 @@ module.exports = {
   getProductsClient: () => databaseConnection.getClient('products'),
   getCartClient: () => databaseConnection.getClient('cart'),
   getOrdersClient: () => databaseConnection.getClient('orders'),
+  getPaymentsClient: () => databaseConnection.getClient('payments'),
   closeAllConnections: () => databaseConnection.closeAll()
 };

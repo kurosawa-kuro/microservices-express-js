@@ -51,7 +51,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-cloud-shop}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
-      POSTGRES_MULTIPLE_DATABASES: cloud-shop_auth,cloud-shop_users,cloud-shop_products,cloud-shop_cart,cloud-shop_orders,keycloak
+      POSTGRES_MULTIPLE_DATABASES: cloud-shop_auth,cloud-shop_users,cloud-shop_products,cloud-shop_cart,cloud-shop_orders,cloud-shop_payments,keycloak
     ports:
       - "5432:5432"
     volumes:
@@ -192,6 +192,7 @@ services:
       - PRODUCTS_SERVICE_URL=http://products-service:8083
       - CART_SERVICE_URL=http://cart-service:8084
       - ORDERS_SERVICE_URL=http://orders-service:8085
+      - PAYMENTS_SERVICE_URL=http://payments-service:8086
     depends_on:
       - postgres
       - keycloak
@@ -201,6 +202,7 @@ services:
       - products-service
       - cart-service
       - orders-service
+      - payments-service
     volumes:
       - ./services/gateway:/app
       - ./shared:/app/shared
@@ -275,6 +277,39 @@ services:
         condition: service_started
     volumes:
       - ./services/orders:/app/services/orders
+      - ./shared:/app/shared
+    command: npm run dev
+
+  payments-service:
+    build:
+      context: .
+      dockerfile: services/payments/Dockerfile
+    container_name: payments-service
+    ports:
+      - "8086:8086"
+    environment:
+      - NODE_ENV=development
+      - PORT=8086
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cloud-shop}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/cloud-shop_payments
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - USERS_SERVICE_URL=http://users-service:8082
+      - ORDERS_SERVICE_URL=http://orders-service:8085
+      - STRIPE_SECRET_KEY=sk_test_dummy_key_for_testing
+      - STRIPE_WEBHOOK_SECRET=whsec_dummy_webhook_secret
+      - KAFKA_BROKERS=kafka:29092
+      - KAFKA_GROUP_ID_PAYMENTS=payment-events
+      - KAFKA_TOPIC_PAYMENTS=payment-events
+      - KAFKA_TOPIC_ORDERS=order-events
+      - KAFKA_TOPIC_REFUNDS=refund-events
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      orders-service:
+        condition: service_started
+    volumes:
+      - ./services/payments:/app/services/payments
       - ./shared:/app/shared
     command: npm run dev
 
