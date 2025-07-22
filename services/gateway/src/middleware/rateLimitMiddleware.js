@@ -1,5 +1,5 @@
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const logger = require('../../shared/utils/logger');
+const logger = require('../../../shared/utils/logger');
 
 const authRateLimiter = new RateLimiterMemory({
   keyGenerator: (req) => req.ip,

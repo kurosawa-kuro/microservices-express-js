@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const { CustomerDto } = require('../../shared/types');
 const EventPublisherService = require('./eventPublisherService');
-const logger = require('../../shared/utils/logger');
+const logger = require('../../../shared/utils/logger');
 
 class AccountsService {
   constructor() {

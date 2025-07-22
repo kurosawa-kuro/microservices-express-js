@@ -1,5 +1,5 @@
 const { Kafka } = require('kafkajs');
-const logger = require('../shared/utils/logger');
+const logger = require('../../../../shared/utils/logger');
 const MessageService = require('../services/messageService');
 
 class KafkaConsumer {

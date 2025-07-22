@@ -1,6 +1,6 @@
 const CardsService = require('../services/cardsService');
-const { CARDS_CONSTANTS } = require('../../shared/utils/constants');
-const logger = require('../../shared/utils/logger');
+const { CARDS_CONSTANTS } = require('../../../shared/utils/constants');
+const logger = require('../../../shared/utils/logger');
 
 const cardsService = new CardsService();
 

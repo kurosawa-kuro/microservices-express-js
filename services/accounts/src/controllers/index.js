@@ -1,7 +1,7 @@
 const AccountsService = require('../services/accountsService');
 const CustomersService = require('../services/customersService');
-const { ACCOUNTS_CONSTANTS } = require('../../shared/utils/constants');
-const logger = require('../../shared/utils/logger');
+const { ACCOUNTS_CONSTANTS } = require('../../../shared/utils/constants');
+const logger = require('../../../shared/utils/logger');
 
 const accountsService = new AccountsService();
 const customersService = new CustomersService();
