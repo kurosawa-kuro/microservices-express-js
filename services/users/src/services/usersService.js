@@ -67,16 +67,16 @@ class UsersService {
 
     try {
       const [cardsResponse, loansResponse] = await Promise.all([
-        axios.get(`${process.env.CARDS_SERVICE_URL}/kurobank/cards`, {
+        axios.get(`${process.env.CARDS_SERVICE_URL}/cloud-shop/cards`, {
           params: { mobileNumber: user.phoneNumber },
-          headers: { 'kurobank-correlation-id': correlationId }
+          headers: { 'cloud-shop-correlation-id': correlationId }
         }).catch(err => {
           logger.warn('Cards service unavailable', { correlationId });
           return { data: null };
         }),
-        axios.get(`${process.env.LOANS_SERVICE_URL}/kurobank/loans`, {
+        axios.get(`${process.env.LOANS_SERVICE_URL}/cloud-shop/loans`, {
           params: { mobileNumber: user.phoneNumber },
-          headers: { 'kurobank-correlation-id': correlationId }
+          headers: { 'cloud-shop-correlation-id': correlationId }
         }).catch(err => {
           logger.warn('Loans service unavailable', { correlationId });
           return { data: null };

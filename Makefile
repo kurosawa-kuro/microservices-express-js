@@ -1,11 +1,11 @@
-# KuroBank Microservices Express.js Makefile
+# Cloud-Shop Microservices Express.js Makefile
 # Comprehensive management tool for microservices development and deployment
 
 .PHONY: help install build up down logs test test-unit test-integration clean dev migrate-all seed-all lint format status health
 
 # Default target
 help: ## Show this help message
-	@echo "KuroBank Microservices Management Commands:"
+	@echo "Cloud-Shop Microservices Management Commands:"
 	@echo ""
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
@@ -231,7 +231,7 @@ quick-prod: ## Quick production start (build and run all services)
 
 # Information Commands
 info: ## Show project information
-	@echo "📋 KuroBank Microservices Express.js Project"
+	@echo "📋 Cloud-Shop Microservices Express.js Project"
 	@echo "=============================================="
 	@echo "Services:"
 	@echo "  • Gateway Service (8072) - API Gateway & Authentication"

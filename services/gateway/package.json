@@ -1,7 +1,7 @@
 {
-  "name": "@kurobank/gateway-service",
+  "name": "@cloud-shop/gateway-service",
   "version": "1.0.0",
-  "description": "KuroBank API Gateway with authentication and routing",
+  "description": "Cloud-Shop API Gateway with authentication and routing",
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",

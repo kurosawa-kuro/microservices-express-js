@@ -8,9 +8,9 @@ const server = app.listen(PORT, () => {
   logger.info('Available routes:');
   logger.info('  - GET  /actuator/health (public)');
   logger.info('  - GET  /api/health (public)');
-  logger.info('  - ALL  /kurobank/accounts/** (requires ACCOUNTS role)');
-  logger.info('  - ALL  /kurobank/cards/** (requires CARDS role)');
-  logger.info('  - ALL  /kurobank/loans/** (requires LOANS role)');
+  logger.info('  - ALL  /cloud-shop/accounts/** (requires ACCOUNTS role)');
+  logger.info('  - ALL  /cloud-shop/cards/** (requires CARDS role)');
+  logger.info('  - ALL  /cloud-shop/loans/** (requires LOANS role)');
   logger.info('');
   logger.info('To generate test JWT tokens, run:');
   logger.info('  node src/utils/tokenGenerator.js');

@@ -22,7 +22,7 @@ class TokenRefreshService {
       }), {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'kurobank-correlation-id': correlationId
+          'cloud-shop-correlation-id': correlationId
         },
         timeout: 10000
       });
@@ -78,7 +78,7 @@ class TokenRefreshService {
         }), {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'kurobank-correlation-id': correlationId
+            'cloud-shop-correlation-id': correlationId
           },
           timeout: 5000
         }
@@ -104,7 +104,7 @@ class TokenRefreshService {
         }), {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'kurobank-correlation-id': correlationId
+            'cloud-shop-correlation-id': correlationId
           },
           timeout: 5000
         }

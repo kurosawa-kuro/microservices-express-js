@@ -1,7 +1,7 @@
 {
-  "name": "@kurobank/shared",
+  "name": "@cloud-shop/shared",
   "version": "1.0.0",
-  "description": "Shared utilities and middleware for KuroBank microservices",
+  "description": "Shared utilities and middleware for Cloud-Shop microservices",
   "main": "index.js",
   "dependencies": {
     "@prisma/client": "^6.12.0",

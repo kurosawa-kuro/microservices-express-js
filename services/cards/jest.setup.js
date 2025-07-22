@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const path = require('path');
 const { execSync } = require('child_process');
 
-process.env.DATABASE_URL = `postgresql://${process.env.POSTGRES_USER || 'kurobank'}:${process.env.POSTGRES_PASSWORD || 'kurobank123'}@localhost:5432/kurobank_cards_test`;
+process.env.DATABASE_URL = `postgresql://${process.env.POSTGRES_USER || 'cloud-shop'}:${process.env.POSTGRES_PASSWORD || 'cloud-shop123'}@localhost:5432/cloud-shop_cards_test`;
 process.env.NODE_ENV = 'test';
 
 let prisma;
@@ -11,12 +11,12 @@ beforeAll(async () => {
   try {
     execSync('npx prisma migrate deploy', { 
       cwd: __dirname,
-      env: { ...process.env, DATABASE_URL: `postgresql://${process.env.POSTGRES_USER || 'kurobank'}:${process.env.POSTGRES_PASSWORD || 'kurobank123'}@localhost:5432/kurobank_cards_test` }
+      env: { ...process.env, DATABASE_URL: `postgresql://${process.env.POSTGRES_USER || 'cloud-shop'}:${process.env.POSTGRES_PASSWORD || 'cloud-shop123'}@localhost:5432/cloud-shop_cards_test` }
     });
   } catch (error) {
     execSync('npx prisma db push', { 
       cwd: __dirname,
-      env: { ...process.env, DATABASE_URL: `postgresql://${process.env.POSTGRES_USER || 'kurobank'}:${process.env.POSTGRES_PASSWORD || 'kurobank123'}@localhost:5432/kurobank_cards_test` }
+      env: { ...process.env, DATABASE_URL: `postgresql://${process.env.POSTGRES_USER || 'cloud-shop'}:${process.env.POSTGRES_PASSWORD || 'cloud-shop123'}@localhost:5432/cloud-shop_cards_test` }
     });
   }
   

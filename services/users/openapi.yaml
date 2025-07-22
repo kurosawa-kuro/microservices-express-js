@@ -1,18 +1,18 @@
 openapi: 3.0.3
 info:
-  title: KuroBank Users Service API
-  description: User profile and account management service for KuroBank
+  title: Cloud-Shop Users Service API
+  description: User profile and account management service for Cloud-Shop
   version: 1.0.0
   contact:
-    name: KuroBank Development Team
-    email: dev@kurobank.com
+    name: Cloud-Shop Development Team
+    email: dev@cloud-shop.com
 
 servers:
   - url: http://localhost:8082
     description: Development server
 
 paths:
-  /kurobank/users:
+  /cloud-shop/users:
     post:
       summary: Create a new user
       operationId: createUser
@@ -30,7 +30,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
 
-  /kurobank/users/{id}:
+  /cloud-shop/users/{id}:
     get:
       summary: Get user by ID
       operationId: getUser
@@ -86,7 +86,7 @@ paths:
         '200':
           description: User deleted successfully
 
-  /kurobank/users/mobile:
+  /cloud-shop/users/mobile:
     get:
       summary: Get user by mobile number
       operationId: getUserByMobile
@@ -106,7 +106,7 @@ paths:
         '404':
           description: User not found
 
-  /kurobank/users/{id}/details:
+  /cloud-shop/users/{id}/details:
     get:
       summary: Get user details with cards and loans
       operationId: getUserDetails
@@ -124,7 +124,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserDetails'
 
-  /kurobank/users/accounts:
+  /cloud-shop/users/accounts:
     post:
       summary: Create a new account
       operationId: createAccount

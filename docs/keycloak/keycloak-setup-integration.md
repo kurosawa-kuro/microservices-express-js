@@ -2,7 +2,7 @@
 
 ## 概要
 
-本ガイドでは、KuroBankマイクロサービスプロジェクトにKeycloakとPostgreSQLを使用した認証認可システムの導入から統合、テストまでを包括的に説明します。
+本ガイドでは、Cloud-ShopマイクロサービスプロジェクトにKeycloakとPostgreSQLを使用した認証認可システムの導入から統合、テストまでを包括的に説明します。
 
 ## アーキテクチャ概要
 
@@ -14,7 +14,7 @@
 ## 前提条件
 
 - Docker & Docker Compose
-- 既存のKuroBankマイクロサービス環境
+- 既存のCloud-Shopマイクロサービス環境
 - Node.js (v18以上)
 
 ---
@@ -90,8 +90,8 @@ gateway-service:
   # ... 既存設定 ...
   environment:
     - KEYCLOAK_URL=http://keycloak:8080
-    - KEYCLOAK_REALM=kurobank
-    - KEYCLOAK_CLIENT_ID=kurobank-gateway
+    - KEYCLOAK_REALM=cloud-shop
+    - KEYCLOAK_CLIENT_ID=cloud-shop-gateway
 ```
 
 ### 2. サービス起動
@@ -117,7 +117,7 @@ docker-compose logs keycloak
 ### 2.2 Realmの作成
 
 1. 左上のマスターレルム横のドロップダウンから「Create realm」
-2. Realm name: `kurobank`
+2. Realm name: `cloud-shop`
 3. 「Create」をクリック
 
 ### 2.3 クライアントの作成
@@ -126,8 +126,8 @@ docker-compose logs keycloak
 2. 「Create client」をクリック
 3. 以下を設定：
    - Client type: `OpenID Connect`
-   - Client ID: `kurobank-gateway`
-   - Name: `KuroBank Gateway`
+   - Client ID: `cloud-shop-gateway`
+   - Name: `Cloud-Shop Gateway`
 4. 「Next」をクリック
 5. Capability config:
    - Client authentication: `On`
@@ -163,7 +163,7 @@ docker-compose logs keycloak
 3. ユーザー情報を入力：
    ```
    Username: testuser
-   Email: test@kurobank.com
+   Email: test@cloud-shop.com
    First name: Test
    Last name: User
    Email verified: On
@@ -638,11 +638,11 @@ services:
 
 ```json
 {
-  "realm": "kurobank-test",
+  "realm": "cloud-shop-test",
   "enabled": true,
   "clients": [
     {
-      "clientId": "kurobank-test",
+      "clientId": "cloud-shop-test",
       "enabled": true,
       "publicClient": false,
       "serviceAccountsEnabled": true,
@@ -720,8 +720,8 @@ const jwt = require('jsonwebtoken');
 class KeycloakTestHelper {
   constructor({
     keycloakUrl = 'http://localhost:8182',
-    realm = 'kurobank-test',
-    clientId = 'kurobank-test',
+    realm = 'cloud-shop-test',
+    clientId = 'cloud-shop-test',
     clientSecret = 'test-client-secret'
   } = {}) {
     this.keycloakUrl = keycloakUrl;
@@ -844,9 +844,9 @@ npm test
 
 ```bash
 # トークン取得
-curl -X POST "http://localhost:8181/realms/kurobank/protocol/openid-connect/token" \
+curl -X POST "http://localhost:8181/realms/cloud-shop/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "client_id=kurobank-gateway" \
+  -d "client_id=cloud-shop-gateway" \
   -d "client_secret=YOUR_CLIENT_SECRET" \
   -d "username=testuser" \
   -d "password=test123" \
@@ -888,7 +888,7 @@ curl -X GET "http://localhost:8072/api/accounts" \
 curl http://localhost:8181/health/ready
 
 # JWKS エンドポイント確認
-curl http://localhost:8181/realms/kurobank/protocol/openid-connect/certs
+curl http://localhost:8181/realms/cloud-shop/protocol/openid-connect/certs
 
 # Gateway Serviceヘルスチェック
 curl http://localhost:8072/actuator/health

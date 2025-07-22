@@ -29,7 +29,7 @@ app.use(cors({
   origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'kurobank-correlation-id']
+  allowedHeaders: ['Content-Type', 'Authorization', 'cloud-shop-correlation-id']
 }));
 
 app.use(express.json());
@@ -48,7 +48,7 @@ app.use('/public/**', createProxyMiddleware({
   },
   onProxyReq: (proxyReq, req, res) => {
     if (req.correlationId) {
-      proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+      proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
     }
   }
 }));
@@ -62,120 +62,120 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.use('/kurobank/auth/**', createProxyMiddleware({
+app.use('/cloud-shop/auth/**', createProxyMiddleware({
   target: process.env.AUTH_SERVICE_URL || 'http://localhost:8081',
   changeOrigin: true,
   pathRewrite: {
-    '^/kurobank/auth': '/kurobank/auth'
+    '^/cloud-shop/auth': '/cloud-shop/auth'
   },
   onProxyReq: (proxyReq, req, res) => {
     if (req.correlationId) {
-      proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+      proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
     }
   }
 }));
 
-app.use('/kurobank/users/**', createProxyMiddleware({
+app.use('/cloud-shop/users/**', createProxyMiddleware({
   target: process.env.USERS_SERVICE_URL || 'http://localhost:8082',
   changeOrigin: true,
   pathRewrite: {
-    '^/kurobank/users': '/kurobank/users'
+    '^/cloud-shop/users': '/cloud-shop/users'
   },
   onProxyReq: (proxyReq, req, res) => {
     if (req.correlationId) {
-      proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+      proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
     }
   }
 }));
 
-app.use('/kurobank/accounts/**', 
+app.use('/cloud-shop/accounts/**', 
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.USERS_SERVICE_URL || 'http://localhost:8082',
     changeOrigin: true,
     pathRewrite: {
-      '^/kurobank/accounts': '/kurobank/users/accounts'
+      '^/cloud-shop/accounts': '/cloud-shop/users/accounts'
     },
     onProxyReq: (proxyReq, req, res) => {
       if (req.correlationId) {
-        proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
       }
     }
   })
 );
 
-app.use('/kurobank/cards/**',
+app.use('/cloud-shop/cards/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.CARDS_SERVICE_URL || 'http://localhost:9000',
     changeOrigin: true,
     pathRewrite: {
-      '^/kurobank/cards': '/api'
+      '^/cloud-shop/cards': '/api'
     },
     onProxyReq: (proxyReq, req, res) => {
       if (req.correlationId) {
-        proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
       }
     }
   })
 );
 
-app.use('/kurobank/loans/**',
+app.use('/cloud-shop/loans/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.LOANS_SERVICE_URL || 'http://localhost:8090',
     changeOrigin: true,
     pathRewrite: {
-      '^/kurobank/loans': '/api'
+      '^/cloud-shop/loans': '/api'
     },
     onProxyReq: (proxyReq, req, res) => {
       if (req.correlationId) {
-        proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
       }
     }
   })
 );
 
-app.use('/kurobank/products/**', createProxyMiddleware({
+app.use('/cloud-shop/products/**', createProxyMiddleware({
   target: process.env.PRODUCTS_SERVICE_URL || 'http://localhost:8083',
   changeOrigin: true,
   pathRewrite: {
-    '^/kurobank/products': '/api'
+    '^/cloud-shop/products': '/api'
   },
   onProxyReq: (proxyReq, req, res) => {
     if (req.correlationId) {
-      proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+      proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
     }
   }
 }));
 
-app.use('/kurobank/cart/**',
+app.use('/cloud-shop/cart/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.CART_SERVICE_URL || 'http://localhost:8084',
     changeOrigin: true,
     pathRewrite: {
-      '^/kurobank/cart': '/api'
+      '^/cloud-shop/cart': '/api'
     },
     onProxyReq: (proxyReq, req, res) => {
       if (req.correlationId) {
-        proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
       }
     }
   })
 );
 
-app.use('/kurobank/orders/**',
+app.use('/cloud-shop/orders/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
     target: process.env.ORDERS_SERVICE_URL || 'http://localhost:8085',
     changeOrigin: true,
     pathRewrite: {
-      '^/kurobank/orders': '/api'
+      '^/cloud-shop/orders': '/api'
     },
     onProxyReq: (proxyReq, req, res) => {
       if (req.correlationId) {
-        proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
       }
     }
   })

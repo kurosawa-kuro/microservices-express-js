@@ -1,7 +1,7 @@
 {
-  "name": "@kurobank/message-service",
+  "name": "@cloud-shop/message-service",
   "version": "1.0.0",
-  "description": "KuroBank Message Service for email and SMS processing",
+  "description": "Cloud-Shop Message Service for email and SMS processing",
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",

@@ -1,5 +1,5 @@
 {
-  "name": "kurobank-orders-service",
+  "name": "cloud-shop-orders-service",
   "version": "1.0.0",
   "description": "Order Management Service for ECShop",
   "main": "server.js",

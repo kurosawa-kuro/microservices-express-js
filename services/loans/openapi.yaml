@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: KuroBank Loans Service API
-  description: CRUD REST APIs in KuroBank to CREATE, UPDATE, FETCH AND DELETE loan details
+  title: Cloud-Shop Loans Service API
+  description: CRUD REST APIs in Cloud-Shop to CREATE, UPDATE, FETCH AND DELETE loan details
   version: 1.0.0
   contact:
     name: Kuro Bytes
@@ -12,7 +12,7 @@ paths:
     post:
       operationId: createLoan
       summary: Create Loan REST API
-      description: REST API to create new Loan inside KuroBank
+      description: REST API to create new Loan inside Cloud-Shop
       parameters:
         - name: mobileNumber
           in: query
@@ -41,7 +41,7 @@ paths:
       summary: Fetch Loan Details REST API
       description: REST API to fetch loan details based on a mobile number
       parameters:
-        - name: kurobank-correlation-id
+        - name: cloud-shop-correlation-id
           in: header
           required: false
           schema:

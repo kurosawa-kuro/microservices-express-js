@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: KuroBank Gateway Service API
-  description: API Gateway for KuroBank microservices with authentication and routing
+  title: Cloud-Shop Gateway Service API
+  description: API Gateway for Cloud-Shop microservices with authentication and routing
   version: 1.0.0
   contact:
     name: Kuro Bytes
@@ -113,7 +113,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  /kurobank/accounts/**:
+  /cloud-shop/accounts/**:
     get:
       operationId: accountsProxy
       summary: Accounts Service Proxy
@@ -132,7 +132,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  /kurobank/cards/**:
+  /cloud-shop/cards/**:
     get:
       operationId: cardsProxy
       summary: Cards Service Proxy
@@ -151,7 +151,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  /kurobank/loans/**:
+  /cloud-shop/loans/**:
     get:
       operationId: loansProxy
       summary: Loans Service Proxy

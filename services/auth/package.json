@@ -1,7 +1,7 @@
 {
-  "name": "kurobank-auth-service",
+  "name": "cloud-shop-auth-service",
   "version": "1.0.0",
-  "description": "KuroBank Authentication Service",
+  "description": "Cloud-Shop Authentication Service",
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",

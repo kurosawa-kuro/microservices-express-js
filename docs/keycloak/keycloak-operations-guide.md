@@ -267,7 +267,7 @@ sequenceDiagram
 
 ```bash
 # トークン取得
-curl -X POST "http://localhost:8181/realms/kurobank/protocol/openid-connect/token" \
+curl -X POST "http://localhost:8181/realms/cloud-shop/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "client_id=web-app" \
   -d "client_secret=your-secret" \
@@ -293,7 +293,7 @@ curl -X POST "http://localhost:8181/realms/kurobank/protocol/openid-connect/toke
 
 ```bash
 # サービスアカウントのトークン取得
-curl -X POST "http://localhost:8181/realms/kurobank/protocol/openid-connect/token" \
+curl -X POST "http://localhost:8181/realms/cloud-shop/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "client_id=backend-api" \
   -d "client_secret=api-secret" \
@@ -322,12 +322,12 @@ ADMIN_TOKEN=$(curl -s -X POST "http://localhost:8181/realms/master/protocol/open
 
 ```bash
 # ユーザー一覧取得
-curl -X GET "http://localhost:8181/admin/realms/kurobank/users" \
+curl -X GET "http://localhost:8181/admin/realms/cloud-shop/users" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json"
 
 # ユーザー作成
-curl -X POST "http://localhost:8181/admin/realms/kurobank/users" \
+curl -X POST "http://localhost:8181/admin/realms/cloud-shop/users" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -344,7 +344,7 @@ curl -X POST "http://localhost:8181/admin/realms/kurobank/users" \
   }'
 
 # ロール割り当て
-curl -X POST "http://localhost:8181/admin/realms/kurobank/users/{userId}/role-mappings/realm" \
+curl -X POST "http://localhost:8181/admin/realms/cloud-shop/users/{userId}/role-mappings/realm" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '[
@@ -359,11 +359,11 @@ curl -X POST "http://localhost:8181/admin/realms/kurobank/users/{userId}/role-ma
 
 ```bash
 # OpenID Connect Discovery
-curl http://localhost:8181/realms/kurobank/.well-known/openid-configuration
+curl http://localhost:8181/realms/cloud-shop/.well-known/openid-configuration
 
 # 主要なエンドポイント
 {
-  "issuer": "http://localhost:8181/realms/kurobank",
+  "issuer": "http://localhost:8181/realms/cloud-shop",
   "authorization_endpoint": ".../protocol/openid-connect/auth",
   "token_endpoint": ".../protocol/openid-connect/token",
   "userinfo_endpoint": ".../protocol/openid-connect/userinfo",
@@ -463,7 +463,7 @@ environment:
 # Realmエクスポート
 docker exec keycloak /opt/keycloak/bin/kc.sh export \
   --file /tmp/realm-export.json \
-  --realm kurobank
+  --realm cloud-shop
 
 # データベースバックアップ
 pg_dump -h localhost -U keycloak keycloak > keycloak_backup.sql
@@ -650,7 +650,7 @@ Web Origins: *
 
 ```bash
 # レート制限状況の確認
-curl -v "http://localhost:8072/kurobank/accounts"
+curl -v "http://localhost:8072/cloud-shop/accounts"
 # Retry-Afterヘッダーを確認
 ```
 

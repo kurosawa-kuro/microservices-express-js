@@ -38,7 +38,7 @@ api.init();
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 app.use((req, res, next) => {
-  req.correlationId = req.headers['kurobank-correlation-id'] || `products-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  req.correlationId = req.headers['cloud-shop-correlation-id'] || `products-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   logger.info(`${req.method} ${req.path}`, { correlationId: req.correlationId });
   next();
 });

@@ -106,7 +106,7 @@ CREATE TABLE user_accounts (
 
 ### Gateway Service Updates
 - Remove `/auth/*` routes (proxy to Auth service instead)
-- Update `/kurobank/accounts/*` to proxy to Users service
+- Update `/cloud-shop/accounts/*` to proxy to Users service
 - Add proxy routes for Auth service
 
 ## Inter-Service Communication

@@ -1,5 +1,5 @@
 {
-  "name": "kurobank-cart-service",
+  "name": "cloud-shop-cart-service",
   "version": "1.0.0",
   "description": "Shopping Cart Service for ECShop",
   "main": "server.js",

@@ -1,7 +1,7 @@
 {
-  "name": "@kurobank/cards-service",
+  "name": "@cloud-shop/cards-service",
   "version": "1.0.0",
-  "description": "KuroBank Cards Service for credit card management",
+  "description": "Cloud-Shop Cards Service for credit card management",
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",

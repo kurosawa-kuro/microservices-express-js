@@ -1,7 +1,7 @@
 {
-  "name": "@kurobank/loans-service",
+  "name": "@cloud-shop/loans-service",
   "version": "1.0.0",
-  "description": "KuroBank Loans Service for loan management",
+  "description": "Cloud-Shop Loans Service for loan management",
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",

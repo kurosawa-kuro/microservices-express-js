@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: KuroBank Message Service API
+  title: Cloud-Shop Message Service API
   description: Message processing service for email and SMS communications
   version: 1.0.0
   contact:

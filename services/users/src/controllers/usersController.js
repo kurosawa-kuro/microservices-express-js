@@ -82,7 +82,7 @@ module.exports = {
   getUserDetails: async (c, req, res) => {
     try {
       const { id } = c.request.params;
-      const correlationId = c.request.headers['kurobank-correlation-id'];
+      const correlationId = c.request.headers['cloud-shop-correlation-id'];
       const userDetails = await usersService.getUserDetails(id, correlationId);
       return res.status(200).json(userDetails);
     } catch (error) {

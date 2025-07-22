@@ -41,12 +41,12 @@ api.init();
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 app.use((req, res, next) => {
-  req.correlationId = req.headers['kurobank-correlation-id'] || `users-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  req.correlationId = req.headers['cloud-shop-correlation-id'] || `users-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   logger.info(`${req.method} ${req.path}`, { correlationId: req.correlationId });
   next();
 });
 
-app.use('/kurobank/users', (req, res) => api.handleRequest(req, req, res));
+app.use('/cloud-shop/users', (req, res) => api.handleRequest(req, req, res));
 
 app.get('/actuator/health', (req, res) => {
   res.status(200).json({

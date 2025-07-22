@@ -1,5 +1,5 @@
 {
-  "name": "kurobank-products-service",
+  "name": "cloud-shop-products-service",
   "version": "1.0.0",
   "description": "Product Catalog Service for ECShop",
   "main": "server.js",

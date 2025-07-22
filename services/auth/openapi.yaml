@@ -1,18 +1,18 @@
 openapi: 3.0.3
 info:
-  title: KuroBank Auth Service API
-  description: Authentication and authorization service for KuroBank
+  title: Cloud-Shop Auth Service API
+  description: Authentication and authorization service for Cloud-Shop
   version: 1.0.0
   contact:
-    name: KuroBank Development Team
-    email: dev@kurobank.com
+    name: Cloud-Shop Development Team
+    email: dev@cloud-shop.com
 
 servers:
   - url: http://localhost:8081
     description: Development server
 
 paths:
-  /kurobank/auth/verify:
+  /cloud-shop/auth/verify:
     post:
       summary: Verify JWT token
       operationId: verifyToken
@@ -37,7 +37,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /kurobank/auth/refresh:
+  /cloud-shop/auth/refresh:
     post:
       summary: Refresh access token
       operationId: refreshToken
@@ -73,7 +73,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /kurobank/auth/revoke:
+  /cloud-shop/auth/revoke:
     post:
       summary: Revoke token
       operationId: revokeToken
@@ -99,7 +99,7 @@ paths:
                   message:
                     type: string
 
-  /kurobank/auth/users/{userId}/roles:
+  /cloud-shop/auth/users/{userId}/roles:
     get:
       summary: Get user roles
       operationId: getUserRoles
@@ -122,7 +122,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/Role'
 
-  /kurobank/auth/roles/assign:
+  /cloud-shop/auth/roles/assign:
     post:
       summary: Assign role to user
       operationId: assignRole
@@ -144,7 +144,7 @@ paths:
         '200':
           description: Role assigned successfully
 
-  /kurobank/auth/roles/remove:
+  /cloud-shop/auth/roles/remove:
     post:
       summary: Remove role from user
       operationId: removeRole

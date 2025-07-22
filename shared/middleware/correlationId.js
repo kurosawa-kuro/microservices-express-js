@@ -1,9 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
 
 const correlationId = (req, res, next) => {
-  const correlationId = req.headers['kurobank-correlation-id'] || uuidv4();
+  const correlationId = req.headers['cloud-shop-correlation-id'] || uuidv4();
   req.correlationId = correlationId;
-  res.setHeader('kurobank-correlation-id', correlationId);
+  res.setHeader('cloud-shop-correlation-id', correlationId);
   next();
 };
 

@@ -1,4 +1,4 @@
-# Microservices Express.js - KuroBank
+# Microservices Express.js - Cloud-Shop
 
 Express.jsベースのマイクロサービスアーキテクチャによる銀行システムのデモプロジェクト。
 

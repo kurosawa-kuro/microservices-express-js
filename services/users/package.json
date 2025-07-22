@@ -1,7 +1,7 @@
 {
-  "name": "kurobank-users-service",
+  "name": "cloud-shop-users-service",
   "version": "1.0.0",
-  "description": "KuroBank Users Service",
+  "description": "Cloud-Shop Users Service",
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",
