@@ -4,6 +4,9 @@
   "description": "Shared utilities and middleware for KuroBank microservices",
   "main": "index.js",
   "dependencies": {
+    "express-validator": "^7.2.1",
+    "node-cache": "^5.1.2",
+    "opossum": "^9.0.0",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "zod": "^3.22.0"

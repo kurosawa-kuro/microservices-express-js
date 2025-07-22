@@ -1,6 +1,7 @@
 const AccountsService = require('../services/accountsService');
 const CustomersService = require('../services/customersService');
 const { ACCOUNTS_CONSTANTS } = require('../../../../shared/utils/constants');
+const { createStandardError } = require('../../../../shared/middleware/errorHandler');
 const logger = require('../../../../shared/utils/logger');
 
 const accountsService = new AccountsService();
@@ -16,13 +17,9 @@ module.exports = {
         statusMsg: ACCOUNTS_CONSTANTS.MESSAGE_201
       });
     } catch (error) {
-      logger.error('Error creating account:', error);
-      return res.status(500).json({
-        apiPath: req.url,
-        errorCode: 'INTERNAL_SERVER_ERROR',
-        errorMessage: error.message,
-        errorTime: new Date().toISOString()
-      });
+      logger.error('Error creating account:', { error: error.message, correlationId: req.correlationId });
+      const errorResponse = createStandardError(500, 'INTERNAL_SERVER_ERROR', 'Failed to create account', req.url);
+      return res.status(500).json(errorResponse);
     }
   },
 
@@ -34,13 +31,9 @@ module.exports = {
       logger.debug('fetchAccount method end');
       return res.status(200).json(customerDto);
     } catch (error) {
-      logger.error('Error fetching account:', error);
-      return res.status(500).json({
-        apiPath: req.url,
-        errorCode: 'INTERNAL_SERVER_ERROR',
-        errorMessage: error.message,
-        errorTime: new Date().toISOString()
-      });
+      logger.error('Error fetching account:', { error: error.message, mobileNumber, correlationId: req.correlationId });
+      const errorResponse = createStandardError(500, 'INTERNAL_SERVER_ERROR', 'Failed to fetch account', req.url);
+      return res.status(500).json(errorResponse);
     }
   },
 

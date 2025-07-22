@@ -1,12 +1,14 @@
-const { PrismaClient } = require('@prisma/client');
+const { getAccountsClient } = require('../../../../shared/database/prismaClient');
+const cacheManager = require('../../../../shared/cache/cacheManager');
 const { CustomerDto } = require('../../../../shared/types');
 const EventPublisherService = require('./eventPublisherService');
 const logger = require('../../../../shared/utils/logger');
 
 class AccountsService {
   constructor() {
-    this.prisma = new PrismaClient();
+    this.prisma = getAccountsClient();
     this.eventPublisher = process.env.NODE_ENV === 'test' ? null : new EventPublisherService();
+    this.CACHE_TTL = 300; // 5 minutes
   }
 
   async createAccount(customerDto) {
@@ -48,7 +50,8 @@ class AccountsService {
       });
 
       if (this.eventPublisher) {
-        await this.eventPublisher.publishAccountCreatedEvent({
+        // Fire and forget - don't block the response
+        this.eventPublisher.publishAccountCreatedEvent({
           accountNumber: result.account.accountNumber,
           name: result.customer.name,
           email: result.customer.email,
@@ -66,16 +69,20 @@ class AccountsService {
 
   async fetchAccount(mobileNumber) {
     try {
-      const customer = await this.prisma.customer.findUnique({
-        where: { mobileNumber },
-        include: { accounts: true }
-      });
+      const cacheKey = cacheManager.generateKey('accounts', 'fetchAccount', mobileNumber);
+      
+      return await cacheManager.getOrSet(cacheKey, async () => {
+        const customer = await this.prisma.customer.findUnique({
+          where: { mobileNumber },
+          include: { accounts: true }
+        });
 
-      if (!customer) {
-        throw new Error(`Customer not found with given mobileNumber ${mobileNumber}`);
-      }
+        if (!customer) {
+          throw new Error(`Customer not found with given mobileNumber ${mobileNumber}`);
+        }
 
-      return this.mapToCustomerDto(customer);
+        return this.mapToCustomerDto(customer);
+      }, this.CACHE_TTL);
     } catch (error) {
       logger.error('Error fetching account:', error);
       throw error;
@@ -103,6 +110,10 @@ class AccountsService {
         }
       });
 
+      // Invalidate cache for this customer
+      const cacheKey = cacheManager.generateKey('accounts', 'fetchAccount', validatedData.mobileNumber);
+      await cacheManager.del(cacheKey);
+
       logger.info(`Account updated successfully for mobile number: ${validatedData.mobileNumber}`);
       return true;
     } catch (error) {
@@ -124,6 +135,10 @@ class AccountsService {
       await this.prisma.customer.delete({
         where: { customerId: existingCustomer.customerId }
       });
+
+      // Invalidate cache for this customer
+      const cacheKey = cacheManager.generateKey('accounts', 'fetchAccount', mobileNumber);
+      await cacheManager.del(cacheKey);
 
       logger.info(`Account deleted successfully for mobile number: ${mobileNumber}`);
       return true;

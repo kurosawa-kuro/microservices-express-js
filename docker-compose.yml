@@ -52,7 +52,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-kurobank}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kurobank123}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
       POSTGRES_MULTIPLE_DATABASES: kurobank_accounts,kurobank_cards,kurobank_loans,keycloak
     ports:
       - "5432:5432"
@@ -74,7 +74,7 @@ services:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: ${KC_DB_USERNAME:-kurobank}
-      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-kurobank123}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-change_me_in_production}
       KC_HOSTNAME: localhost
       KC_HOSTNAME_PORT: 8080
       KC_HOSTNAME_STRICT: false
@@ -83,7 +83,7 @@ services:
       KC_METRICS_ENABLED: true
       KC_HEALTH_ENABLED: true
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin123}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-change_me_in_production}
     ports:
       - "8181:8080"
     depends_on:
@@ -129,7 +129,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=9000
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-kurobank123}@postgres:5432/kurobank_cards
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_cards
       - BUILD_VERSION=1.0.0
     volumes:
       - ./services/cards:/app
@@ -149,7 +149,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8090
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-kurobank123}@postgres:5432/kurobank_loans
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_loans
       - BUILD_VERSION=1.0.0
     volumes:
       - ./services/loans:/app
@@ -169,7 +169,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8080
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-kurobank123}@postgres:5432/kurobank_accounts
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_accounts
       - BUILD_VERSION=1.0.0
       - CARDS_SERVICE_URL=http://cards-service:9000
       - LOANS_SERVICE_URL=http://loans-service:8090
@@ -199,11 +199,11 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8072
-      - JWT_SECRET=your-secret-key-here
+      - JWT_SECRET=${JWT_SECRET:-change_me_to_secure_32_char_minimum_secret}
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_REALM=kurobank
       - KEYCLOAK_CLIENT_ID=kurobank-gateway
-      - KEYCLOAK_CLIENT_SECRET=your-client-secret-here
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-change_me_in_production}
       - AUTH_RATE_LIMIT_REQUESTS=10
       - AUTH_RATE_LIMIT_WINDOW=60
       - AUTH_RATE_LIMIT_BLOCK=300

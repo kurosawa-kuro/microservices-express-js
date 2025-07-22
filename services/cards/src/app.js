@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
@@ -7,8 +8,9 @@ const OpenAPIBackend = require('openapi-backend').default;
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('js-yaml');
 const correlationId = require('../../../shared/middleware/correlationId');
-const errorHandler = require('../../../shared/middleware/errorHandler');
+const { errorHandler } = require('../../../shared/middleware/errorHandler');
 const bigIntSerializer = require('../../../shared/middleware/bigIntSerializer');
+const createTimeoutMiddleware = require('../../../shared/middleware/timeoutMiddleware');
 const createOpenApiHandlers = require('../../../shared/middleware/openApiHandlers');
 const createCommonHandlers = require('../../../shared/utils/commonHandlers');
 const controllers = require('./controllers');
@@ -39,6 +41,8 @@ api.init();
 const openApiSpec = YAML.load(fs.readFileSync(path.join(__dirname, '../openapi.yaml'), 'utf8'));
 
 const app = express();
+app.use(helmet());
+app.use(createTimeoutMiddleware());
 app.use(cors());
 app.use(express.json());
 app.use(correlationId);

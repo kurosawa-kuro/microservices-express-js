@@ -22,30 +22,37 @@ class EventPublisherService {
   }
 
   async publishAccountCreatedEvent(accountData) {
-    try {
-      await this.connect();
-      
-      const validatedData = AccountsMsgDto.parse(accountData);
-      
-      await this.producer.send({
-        topic: process.env.KAFKA_TOPIC_OUTPUT || 'send-communication',
-        messages: [
-          {
-            key: validatedData.mobileNumber,
-            value: JSON.stringify(validatedData),
-            headers: {
-              'event-type': 'account-created',
-              'timestamp': new Date().toISOString()
+    // Fire and forget - don't wait for the publish to complete
+    setImmediate(async () => {
+      try {
+        await this.connect();
+        
+        const validatedData = AccountsMsgDto.parse(accountData);
+        
+        await this.producer.send({
+          topic: process.env.KAFKA_TOPIC_OUTPUT || 'send-communication',
+          messages: [
+            {
+              key: validatedData.mobileNumber,
+              value: JSON.stringify(validatedData),
+              headers: {
+                'event-type': 'account-created',
+                'timestamp': new Date().toISOString()
+              }
             }
-          }
-        ]
-      });
+          ]
+        });
 
-      logger.info(`Account creation event published for account ${validatedData.accountNumber}`);
-    } catch (error) {
-      logger.error('Error publishing account creation event:', error);
-      throw error;
-    }
+        logger.info(`Account creation event published for account ${validatedData.accountNumber}`);
+      } catch (error) {
+        logger.error('Error publishing account creation event:', {
+          error: error.message,
+          accountNumber: accountData.accountNumber,
+          mobileNumber: accountData.mobileNumber
+        });
+        // Don't throw error in async context - just log it
+      }
+    });
   }
 
   async disconnect() {

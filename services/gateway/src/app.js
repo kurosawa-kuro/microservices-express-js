@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
@@ -7,7 +8,8 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('js-yaml');
 const correlationId = require('../../../shared/middleware/correlationId');
-const errorHandler = require('../../../shared/middleware/errorHandler');
+const createTimeoutMiddleware = require('../../../shared/middleware/timeoutMiddleware');
+const { errorHandler } = require('../../../shared/middleware/errorHandler');
 const authMiddleware = require('./middleware/authMiddleware');
 const { requireRole } = require('../../../shared/middleware/roleMiddleware');
 const { authRateLimit, generalRateLimit } = require('./middleware/rateLimitMiddleware');
@@ -23,6 +25,8 @@ const openApiSpec = YAML.load(fs.readFileSync(path.join(__dirname, '../openapi.y
 
 const app = express();
 
+app.use(helmet());
+app.use(createTimeoutMiddleware(60000)); // 60 seconds for gateway
 app.use(cors({
   origin: true,
   credentials: true,
