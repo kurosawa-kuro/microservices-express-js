@@ -18,7 +18,7 @@ Express.jsベースのマイクロサービスアーキテクチャによる銀�
 ### インフラストラクチャ
 
 - **Apache Kafka** - メッセージング（Zookeeper付属）
-- **SQLite** - 各サービスのデータストレージ
+- **PostgreSQL** - 各サービスのデータストレージ
 - **Docker & Docker Compose** - コンテナ化
 
 ## 技術スタック

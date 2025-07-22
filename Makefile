@@ -264,7 +264,7 @@ info: ## Show project information
 	@echo "Infrastructure:"
 	@echo "  • Apache Kafka (9092) - Message Broker"
 	@echo "  • Zookeeper (2181) - Kafka Coordination"
-	@echo "  • SQLite - Database (per service)"
+	@echo "  • PostgreSQL - Database (per service)"
 	@echo ""
 	@echo "Useful Commands:"
 	@echo "  make quick-start  - Set up development environment"
