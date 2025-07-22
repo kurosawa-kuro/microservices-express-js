@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AuthUser {
+  id              String    @id
+  email           String    @unique
+  keycloakId      String    @unique
+  emailVerified   Boolean   @default(false)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  status          UserStatus @default(ACTIVE)
+  
+  userRoles       UserRole[]
+
+  @@map("auth_users")
+}
+
+model Role {
+  id              Int       @id @default(autoincrement())
+  name            String    @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  userRoles       UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId          String
+  roleId          Int
+  assignedAt      DateTime  @default(now())
+  
+  user            AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  DELETED
+}

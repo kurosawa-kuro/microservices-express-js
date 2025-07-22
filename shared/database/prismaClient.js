@@ -48,7 +48,8 @@ class DatabaseConnection {
 const databaseConnection = new DatabaseConnection();
 
 module.exports = {
-  getAccountsClient: () => databaseConnection.getClient('accounts'),
+  getAuthClient: () => databaseConnection.getClient('auth'),
+  getUsersClient: () => databaseConnection.getClient('users'),
   getCardsClient: () => databaseConnection.getClient('cards'),
   getLoansClient: () => databaseConnection.getClient('loans'),
   closeAllConnections: () => databaseConnection.closeAll()

@@ -10,7 +10,7 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 # Environment variables
-SERVICES := accounts cards loans gateway message
+SERVICES := auth users cards loans gateway message
 COMPOSE_FILE := docker-compose.yml
 
 # Installation and Setup
@@ -31,7 +31,7 @@ install-service: ## Install dependencies for specific service (usage: make insta
 # Database Management
 migrate-all: ## Run database migrations for all services
 	@echo "Running database migrations for all services..."
-	@for service in accounts cards loans; do \
+	@for service in auth users cards loans; do \
 		echo "Migrating $$service database..."; \
 		cd services/$$service && npx prisma migrate dev --skip-generate && npx prisma generate && cd ../..; \
 	done
@@ -43,7 +43,7 @@ migrate-service: ## Run migration for specific service (usage: make migrate-serv
 
 seed-all: ## Seed databases for all services
 	@echo "Seeding databases for all services..."
-	@for service in accounts cards loans; do \
+	@for service in auth users cards loans; do \
 		if [ -f "services/$$service/prisma/seed.js" ]; then \
 			echo "Seeding $$service database..."; \
 			cd services/$$service && npm run db:seed && cd ../..; \
@@ -117,7 +117,7 @@ dev-all: ## Start all services in development mode locally
 # Testing
 test: ## Run all tests
 	@echo "Running all tests..."
-	@for service in accounts cards loans; do \
+	@for service in auth users cards loans; do \
 		echo "Testing $$service service..."; \
 		cd services/$$service && npm test && cd ../..; \
 	done
@@ -153,8 +153,10 @@ health: ## Check health of all services
 	@echo "Checking service health..."
 	@echo "Gateway Service (8072):"
 	@curl -s -o /dev/null -w "Status: %{http_code}\n" http://localhost:8072/actuator/health || echo "Service not responding"
-	@echo "Accounts Service (8080):"
-	@curl -s -o /dev/null -w "Status: %{http_code}\n" http://localhost:8080/actuator/health || echo "Service not responding"
+	@echo "Auth Service (8081):"
+	@curl -s -o /dev/null -w "Status: %{http_code}\n" http://localhost:8081/actuator/health || echo "Service not responding"
+	@echo "Users Service (8082):"
+	@curl -s -o /dev/null -w "Status: %{http_code}\n" http://localhost:8082/actuator/health || echo "Service not responding"
 	@echo "Cards Service (9000):"
 	@curl -s -o /dev/null -w "Status: %{http_code}\n" http://localhost:9000/actuator/health || echo "Service not responding"
 	@echo "Loans Service (8090):"
@@ -197,7 +199,7 @@ db-reset: ## Reset all databases (WARNING: This will delete all data)
 	@read -p "Are you sure you want to continue? (y/N): " confirm; \
 	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
 		echo "Resetting all databases..."; \
-		for service in accounts cards loans; do \
+		for service in auth users cards loans; do \
 			echo "Resetting $$service database..."; \
 			cd services/$$service && rm -f prisma/data/app.db && npx prisma migrate reset --force && cd ../..; \
 		done; \
@@ -233,7 +235,8 @@ info: ## Show project information
 	@echo "=============================================="
 	@echo "Services:"
 	@echo "  • Gateway Service (8072) - API Gateway & Authentication"
-	@echo "  • Accounts Service (8080) - Customer & Account Management"
+	@echo "  • Auth Service (8081) - Authentication & Authorization"
+	@echo "  • Users Service (8082) - User Profile & Account Management"
 	@echo "  • Cards Service (9000) - Card Management"
 	@echo "  • Loans Service (8090) - Loan Management"
 	@echo "  • Message Service (9010) - Event Processing"
@@ -254,7 +257,8 @@ ports: ## Show service port mapping
 	@echo "🌐 Service Port Mapping"
 	@echo "======================"
 	@echo "Gateway Service:    http://localhost:8072"
-	@echo "Accounts Service:   http://localhost:8080"
+	@echo "Auth Service:       http://localhost:8081"
+	@echo "Users Service:      http://localhost:8082"
 	@echo "Cards Service:      http://localhost:9000"
 	@echo "Loans Service:      http://localhost:8090"
 	@echo "Message Service:    http://localhost:9010"

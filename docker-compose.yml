@@ -53,7 +53,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-kurobank}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
-      POSTGRES_MULTIPLE_DATABASES: kurobank_accounts,kurobank_cards,kurobank_loans,keycloak
+      POSTGRES_MULTIPLE_DATABASES: kurobank_auth,kurobank_users,kurobank_cards,kurobank_loans,keycloak
     ports:
       - "5432:5432"
     volumes:
@@ -159,22 +159,44 @@ services:
         condition: service_healthy
     command: npm run dev
 
-  accounts-service:
+  auth-service:
     build:
-      context: ./services/accounts
-      dockerfile: Dockerfile
-    container_name: accounts-service
+      context: .
+      dockerfile: services/auth/Dockerfile
+    container_name: auth-service
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
       - NODE_ENV=development
-      - PORT=8080
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_accounts
-      - BUILD_VERSION=1.0.0
+      - PORT=8081
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_auth
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=kurobank
+      - KEYCLOAK_CLIENT_ID=kurobank-client
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-change_me_in_production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - ./services/auth:/app/services/auth
+      - ./shared:/app/shared
+    command: npm run dev
+
+  users-service:
+    build:
+      context: .
+      dockerfile: services/users/Dockerfile
+    container_name: users-service
+    ports:
+      - "8082:8082"
+    environment:
+      - NODE_ENV=development
+      - PORT=8082
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_users
       - CARDS_SERVICE_URL=http://cards-service:9000
       - LOANS_SERVICE_URL=http://loans-service:8090
-      - KAFKA_BROKERS=kafka:29092
-      - KAFKA_TOPIC_OUTPUT=send-communication
     depends_on:
       postgres:
         condition: service_healthy
@@ -182,10 +204,8 @@ services:
         condition: service_started
       loans-service:
         condition: service_started
-      kafka:
-        condition: service_healthy
     volumes:
-      - ./services/accounts:/app
+      - ./services/users:/app/services/users
       - ./shared:/app/shared
     command: npm run dev
 
@@ -210,14 +230,16 @@ services:
       - GENERAL_RATE_LIMIT_REQUESTS=100
       - GENERAL_RATE_LIMIT_WINDOW=60
       - GENERAL_RATE_LIMIT_BLOCK=60
-      - ACCOUNTS_SERVICE_URL=http://accounts-service:8080
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - USERS_SERVICE_URL=http://users-service:8082
       - CARDS_SERVICE_URL=http://cards-service:9000
       - LOANS_SERVICE_URL=http://loans-service:8090
       - MESSAGE_SERVICE_URL=http://message-service:9010
     depends_on:
       - postgres
       - keycloak
-      - accounts-service
+      - auth-service
+      - users-service
       - cards-service
       - loans-service
       - message-service

@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: KuroBank Auth Service API
+  description: Authentication and authorization service for KuroBank
+  version: 1.0.0
+  contact:
+    name: KuroBank Development Team
+    email: dev@kurobank.com
+
+servers:
+  - url: http://localhost:8081
+    description: Development server
+
+paths:
+  /kurobank/auth/verify:
+    post:
+      summary: Verify JWT token
+      operationId: verifyToken
+      requestBody:
+        required: false
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /kurobank/auth/refresh:
+    post:
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+              required:
+                - refreshToken
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_in:
+                    type: integer
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /kurobank/auth/revoke:
+    post:
+      summary: Revoke token
+      operationId: revokeToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+              required:
+                - token
+      responses:
+        '200':
+          description: Token revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /kurobank/auth/users/{userId}/roles:
+    get:
+      summary: Get user roles
+      operationId: getUserRoles
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+
+  /kurobank/auth/roles/assign:
+    post:
+      summary: Assign role to user
+      operationId: assignRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                roleId:
+                  type: integer
+              required:
+                - userId
+                - roleId
+      responses:
+        '200':
+          description: Role assigned successfully
+
+  /kurobank/auth/roles/remove:
+    post:
+      summary: Remove role from user
+      operationId: removeRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                roleId:
+                  type: integer
+              required:
+                - userId
+                - roleId
+      responses:
+        '200':
+          description: Role removed successfully
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        sub:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        preferred_username:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
