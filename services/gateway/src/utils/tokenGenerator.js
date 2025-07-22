@@ -6,7 +6,7 @@ function generateTestToken(userInfo) {
     email: userInfo.email || 'test@kurobytes.com',
     name: userInfo.name || 'Test User',
     realm_access: {
-      roles: userInfo.roles || ['ACCOUNTS', 'CARDS', 'LOANS']
+      roles: userInfo.roles || ['ACCOUNTS']
     },
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour expiration
@@ -24,25 +24,16 @@ if (require.main === module) {
     sub: 'admin-123',
     email: 'admin@kurobytes.com',
     name: 'Admin User',
-    roles: ['ACCOUNTS', 'CARDS', 'LOANS']
-  }));
-  console.log('');
-  
-  console.log('Accounts user (ACCOUNTS role only):');
-  console.log(generateTestToken({
-    sub: 'accounts-123',
-    email: 'accounts@kurobytes.com',
-    name: 'Accounts User',
     roles: ['ACCOUNTS']
   }));
   console.log('');
   
-  console.log('Cards user (CARDS role only):');
+  console.log('Customer user (ACCOUNTS role):');
   console.log(generateTestToken({
-    sub: 'cards-123',
-    email: 'cards@kurobytes.com',
-    name: 'Cards User',
-    roles: ['CARDS']
+    sub: 'customer-123',
+    email: 'customer@kurobytes.com',
+    name: 'Customer User',
+    roles: ['ACCOUNTS']
   }));
 }
 

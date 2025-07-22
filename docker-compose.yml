@@ -51,7 +51,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-cloud-shop}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
-      POSTGRES_MULTIPLE_DATABASES: cloud-shop_auth,cloud-shop_users,cloud-shop_cards,cloud-shop_loans,cloud-shop_products,cloud-shop_cart,cloud-shop_orders,keycloak
+      POSTGRES_MULTIPLE_DATABASES: cloud-shop_auth,cloud-shop_users,cloud-shop_products,cloud-shop_cart,cloud-shop_orders,keycloak
     ports:
       - "5432:5432"
     volumes:
@@ -117,46 +117,6 @@ services:
       - /app/node_modules
     command: npm run dev
 
-  cards-service:
-    build:
-      context: ./services/cards
-      dockerfile: Dockerfile
-    container_name: cards-service
-    ports:
-      - "9000:9000"
-    environment:
-      - NODE_ENV=development
-      - PORT=9000
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-cloud-shop}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/cloud-shop_cards
-      - BUILD_VERSION=1.0.0
-    volumes:
-      - ./services/cards:/app
-      - ./shared:/app/shared
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: npm run dev
-
-  loans-service:
-    build:
-      context: ./services/loans
-      dockerfile: Dockerfile
-    container_name: loans-service
-    ports:
-      - "8090:8090"
-    environment:
-      - NODE_ENV=development
-      - PORT=8090
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-cloud-shop}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/cloud-shop_loans
-      - BUILD_VERSION=1.0.0
-    volumes:
-      - ./services/loans:/app
-      - ./shared:/app/shared
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: npm run dev
-
   auth-service:
     build:
       context: .
@@ -193,15 +153,9 @@ services:
       - NODE_ENV=development
       - PORT=8082
       - DATABASE_URL=postgresql://${POSTGRES_USER:-cloud-shop}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/cloud-shop_users
-      - CARDS_SERVICE_URL=http://cards-service:9000
-      - LOANS_SERVICE_URL=http://loans-service:8090
     depends_on:
       postgres:
         condition: service_healthy
-      cards-service:
-        condition: service_started
-      loans-service:
-        condition: service_started
     volumes:
       - ./services/users:/app/services/users
       - ./shared:/app/shared
@@ -234,8 +188,6 @@ services:
       - GENERAL_RATE_LIMIT_BLOCK=60
       - AUTH_SERVICE_URL=http://auth-service:8081
       - USERS_SERVICE_URL=http://users-service:8082
-      - CARDS_SERVICE_URL=http://cards-service:9000
-      - LOANS_SERVICE_URL=http://loans-service:8090
       - MESSAGE_SERVICE_URL=http://message-service:9010
       - PRODUCTS_SERVICE_URL=http://products-service:8083
       - CART_SERVICE_URL=http://cart-service:8084
@@ -245,8 +197,6 @@ services:
       - keycloak
       - auth-service
       - users-service
-      - cards-service
-      - loans-service
       - message-service
       - products-service
       - cart-service

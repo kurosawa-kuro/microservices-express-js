@@ -104,37 +104,6 @@ app.use('/cloud-shop/accounts/**',
   })
 );
 
-app.use('/cloud-shop/cards/**',
-  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
-  createProxyMiddleware({
-    target: process.env.CARDS_SERVICE_URL || 'http://localhost:9000',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/cloud-shop/cards': '/api'
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      if (req.correlationId) {
-        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
-      }
-    }
-  })
-);
-
-app.use('/cloud-shop/loans/**',
-  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
-  createProxyMiddleware({
-    target: process.env.LOANS_SERVICE_URL || 'http://localhost:8090',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/cloud-shop/loans': '/api'
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      if (req.correlationId) {
-        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
-      }
-    }
-  })
-);
 
 app.use('/cloud-shop/products/**', createProxyMiddleware({
   target: process.env.PRODUCTS_SERVICE_URL || 'http://localhost:8083',

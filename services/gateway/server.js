@@ -9,8 +9,6 @@ const server = app.listen(PORT, () => {
   logger.info('  - GET  /actuator/health (public)');
   logger.info('  - GET  /api/health (public)');
   logger.info('  - ALL  /cloud-shop/accounts/** (requires ACCOUNTS role)');
-  logger.info('  - ALL  /cloud-shop/cards/** (requires CARDS role)');
-  logger.info('  - ALL  /cloud-shop/loans/** (requires LOANS role)');
   logger.info('');
   logger.info('To generate test JWT tokens, run:');
   logger.info('  node src/utils/tokenGenerator.js');
