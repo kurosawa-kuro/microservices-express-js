@@ -52,5 +52,8 @@ module.exports = {
   getUsersClient: () => databaseConnection.getClient('users'),
   getCardsClient: () => databaseConnection.getClient('cards'),
   getLoansClient: () => databaseConnection.getClient('loans'),
+  getProductsClient: () => databaseConnection.getClient('products'),
+  getCartClient: () => databaseConnection.getClient('cart'),
+  getOrdersClient: () => databaseConnection.getClient('orders'),
   closeAllConnections: () => databaseConnection.closeAll()
 };
