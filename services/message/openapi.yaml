@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: KuroBank Message Service API
+  description: Message processing service for email and SMS communications
+  version: 1.0.0
+  contact:
+    name: Kuro Bytes
+    email: support@kurobytes.com
+
+paths:
+  /actuator/health:
+    get:
+      operationId: healthCheck
+      summary: Health Check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/build-info:
+    get:
+      operationId: getBuildInfo
+      summary: Get Build Information
+      description: Get build version and timestamp information
+      responses:
+        '200':
+          description: Build information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildInfoResponse'
+
+  /api/contact-info:
+    get:
+      operationId: getContactInfo
+      summary: Get Contact Information
+      description: Get contact information for the message service
+      responses:
+        '200':
+          description: Contact information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactInfoResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+        service:
+          type: string
+
+    BuildInfoResponse:
+      type: object
+      properties:
+        version:
+          type: string
+        timestamp:
+          type: string
+
+    ContactInfoResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        onCallSupport:
+          type: string

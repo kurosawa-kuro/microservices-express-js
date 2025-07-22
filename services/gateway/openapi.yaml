@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: KuroBank Gateway Service API
+  description: API Gateway for KuroBank microservices with authentication and routing
+  version: 1.0.0
+  contact:
+    name: Kuro Bytes
+    email: support@kurobytes.com
+
+paths:
+  /actuator/health:
+    get:
+      operationId: healthCheck
+      summary: Health Check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Get Gateway Health
+      responses:
+        '200':
+          description: Gateway health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayHealthResponse'
+
+  /auth/refresh:
+    post:
+      operationId: refreshToken
+      summary: Refresh JWT Token
+      description: Refresh an expired JWT token using a valid refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Bad Request - Refresh token is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/revoke:
+    post:
+      operationId: revokeToken
+      summary: Revoke Refresh Token
+      description: Revoke a refresh token to prevent further use
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token revoked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDto'
+        '400':
+          description: Bad Request - Refresh token is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /public/**:
+    get:
+      operationId: publicProxy
+      summary: Public API Proxy
+      description: Proxy requests to accounts service without authentication
+      responses:
+        '200':
+          description: Successful proxy response
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal Server Error
+
+  /kurobank/accounts/**:
+    get:
+      operationId: accountsProxy
+      summary: Accounts Service Proxy
+      description: Authenticated proxy to accounts service
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful proxy response
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal Server Error
+
+  /kurobank/cards/**:
+    get:
+      operationId: cardsProxy
+      summary: Cards Service Proxy
+      description: Authenticated proxy to cards service
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful proxy response
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal Server Error
+
+  /kurobank/loans/**:
+    get:
+      operationId: loansProxy
+      summary: Loans Service Proxy
+      description: Authenticated proxy to loans service
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful proxy response
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal Server Error
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+        service:
+          type: string
+
+    GatewayHealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+        service:
+          type: string
+        gateway:
+          type: string
+
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+        - refreshToken
+
+    TokenResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+        timestamp:
+          type: string
+
+    ResponseDto:
+      type: object
+      properties:
+        message:
+          type: string
+        timestamp:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: string
+        timestamp:
+          type: string
