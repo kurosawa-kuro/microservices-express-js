@@ -1,6 +1,6 @@
 const app = require('./src/app');
 const KafkaConsumer = require('./src/kafka/kafkaConsumer');
-const logger = require('../../shared/utils/logger');
+const logger = require('./shared/utils/logger');
 
 const PORT = process.env.PORT || 9010;
 const kafkaConsumer = new KafkaConsumer();

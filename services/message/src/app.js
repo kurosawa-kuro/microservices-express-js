@@ -1,10 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const correlationId = require('../../../shared/middleware/correlationId');
-const errorHandler = require('../../../shared/middleware/errorHandler');
-const logger = require('../../../shared/utils/logger');
-const createHealthCheckHandler = require('../../../shared/utils/healthCheckUtility');
+const correlationId = require('./shared/middleware/correlationId');
+const errorHandler = require('./shared/middleware/errorHandler');
+const logger = require('./shared/utils/logger');
+const createHealthCheckHandler = require('./shared/utils/healthCheckUtility');
 
 dotenv.config();
 

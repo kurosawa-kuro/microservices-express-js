@@ -1,5 +1,5 @@
 const axios = require('axios');
-const logger = require('../../../../../shared/utils/logger');
+const logger = require('../../../shared/utils/logger');
 
 class LoansRestClient {
   constructor() {

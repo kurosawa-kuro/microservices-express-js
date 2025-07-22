@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const CardsRestClient = require('./client/cardsRestClient');
 const LoansRestClient = require('./client/loansRestClient');
-const logger = require('../../../../shared/utils/logger');
+const logger = require('../../shared/utils/logger');
 
 class CustomersService {
   constructor() {
