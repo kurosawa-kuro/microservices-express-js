@@ -1,6 +1,6 @@
 const LoansService = require('../services/loansService');
-const { LOANS_CONSTANTS } = require('../../../shared/utils/constants');
-const logger = require('../../../shared/utils/logger');
+const { LOANS_CONSTANTS } = require('../../../../shared/utils/constants');
+const logger = require('../../../../shared/utils/logger');
 
 const loansService = new LoansService();
 

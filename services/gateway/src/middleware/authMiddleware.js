@@ -3,7 +3,7 @@ const jwksClient = require('jwks-rsa');
 const axios = require('axios');
 const crypto = require('crypto');
 const NodeCache = require('node-cache');
-const logger = require('../../../shared/utils/logger');
+const logger = require('../../../../shared/utils/logger');
 
 const tokenCache = new NodeCache({ 
   stdTTL: 300,
