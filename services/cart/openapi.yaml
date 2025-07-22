@@ -1,0 +1,327 @@
+openapi: 3.0.3
+info:
+  title: ECShop Cart Service API
+  description: Shopping Cart Service for ECShop microservices architecture
+  version: 1.0.0
+  contact:
+    name: ECShop Development Team
+    email: dev@ecshop.com
+
+servers:
+  - url: http://localhost:8084
+    description: Local development server
+  - url: http://cart-service:8084
+    description: Docker container server
+
+paths:
+  /actuator/health:
+    get:
+      summary: Health check endpoint
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+
+  /api/cart:
+    post:
+      summary: Add item to cart
+      operationId: addToCart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+      responses:
+        '201':
+          description: Item added to cart successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/cart/{userId}:
+    get:
+      summary: Get user's cart
+      operationId: getCart
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Clear user's cart
+      operationId: clearCart
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cart cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cart cleared successfully
+                  deletedCount:
+                    type: integer
+                    example: 3
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/cart/{userId}/items/{cartItemId}:
+    put:
+      summary: Update cart item quantity
+      operationId: updateCartItem
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+        - name: cartItemId
+          in: path
+          required: true
+          description: Cart item ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCartItemRequest'
+      responses:
+        '200':
+          description: Cart item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+        '404':
+          description: Cart item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Remove item from cart
+      operationId: removeFromCart
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+        - name: cartItemId
+          in: path
+          required: true
+          description: Cart item ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item removed from cart successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Item removed from cart successfully
+        '404':
+          description: Cart item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/cart/{userId}/sync:
+    post:
+      summary: Sync cart with latest product information
+      operationId: syncCart
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cart synced successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cart synced successfully
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: string
+          example: "user123"
+        productId:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 2
+        addedAt:
+          type: string
+          format: date-time
+        productName:
+          type: string
+          example: "Wireless Headphones"
+        productPrice:
+          type: number
+          example: 99.99
+        productImage:
+          type: string
+          example: "https://example.com/image.jpg"
+
+    CartResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        summary:
+          $ref: '#/components/schemas/CartSummary'
+
+    CartSummary:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+          example: 5
+        totalAmount:
+          type: number
+          example: 299.97
+        itemCount:
+          type: integer
+          example: 3
+
+    AddToCartRequest:
+      type: object
+      required:
+        - userId
+        - productId
+      properties:
+        userId:
+          type: string
+          example: "user123"
+        productId:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 1
+          default: 1
+
+    UpdateCartItemRequest:
+      type: object
+      required:
+        - quantity
+      properties:
+        quantity:
+          type: integer
+          example: 3
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 500
+        error:
+          type: string
+          example: "INTERNAL_SERVER_ERROR"
+        message:
+          type: string
+          example: "An internal server error occurred"
+        path:
+          type: string
+          example: "/api/cart"

@@ -53,7 +53,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-kurobank}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
-      POSTGRES_MULTIPLE_DATABASES: kurobank_auth,kurobank_users,kurobank_cards,kurobank_loans,keycloak
+      POSTGRES_MULTIPLE_DATABASES: kurobank_auth,kurobank_users,kurobank_cards,kurobank_loans,kurobank_products,kurobank_cart,kurobank_orders,keycloak
     ports:
       - "5432:5432"
     volumes:
@@ -235,6 +235,9 @@ services:
       - CARDS_SERVICE_URL=http://cards-service:9000
       - LOANS_SERVICE_URL=http://loans-service:8090
       - MESSAGE_SERVICE_URL=http://message-service:9010
+      - PRODUCTS_SERVICE_URL=http://products-service:8083
+      - CART_SERVICE_URL=http://cart-service:8084
+      - ORDERS_SERVICE_URL=http://orders-service:8085
     depends_on:
       - postgres
       - keycloak
@@ -243,8 +246,83 @@ services:
       - cards-service
       - loans-service
       - message-service
+      - products-service
+      - cart-service
+      - orders-service
     volumes:
       - ./services/gateway:/app
+      - ./shared:/app/shared
+    command: npm run dev
+
+  products-service:
+    build:
+      context: .
+      dockerfile: services/products/Dockerfile
+    container_name: products-service
+    ports:
+      - "8083:8083"
+    environment:
+      - NODE_ENV=development
+      - PORT=8083
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_products
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - USERS_SERVICE_URL=http://users-service:8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./services/products:/app/services/products
+      - ./shared:/app/shared
+    command: npm run dev
+
+  cart-service:
+    build:
+      context: .
+      dockerfile: services/cart/Dockerfile
+    container_name: cart-service
+    ports:
+      - "8084:8084"
+    environment:
+      - NODE_ENV=development
+      - PORT=8084
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_cart
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - USERS_SERVICE_URL=http://users-service:8082
+      - PRODUCTS_SERVICE_URL=http://products-service:8083
+    depends_on:
+      postgres:
+        condition: service_healthy
+      products-service:
+        condition: service_started
+    volumes:
+      - ./services/cart:/app/services/cart
+      - ./shared:/app/shared
+    command: npm run dev
+
+  orders-service:
+    build:
+      context: .
+      dockerfile: services/orders/Dockerfile
+    container_name: orders-service
+    ports:
+      - "8085:8085"
+    environment:
+      - NODE_ENV=development
+      - PORT=8085
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-kurobank}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/kurobank_orders
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - USERS_SERVICE_URL=http://users-service:8082
+      - PRODUCTS_SERVICE_URL=http://products-service:8083
+      - CART_SERVICE_URL=http://cart-service:8084
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cart-service:
+        condition: service_started
+      products-service:
+        condition: service_started
+    volumes:
+      - ./services/orders:/app/services/orders
       - ./shared:/app/shared
     command: npm run dev
 

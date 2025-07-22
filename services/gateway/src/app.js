@@ -136,6 +136,51 @@ app.use('/kurobank/loans/**',
   })
 );
 
+app.use('/kurobank/products/**', createProxyMiddleware({
+  target: process.env.PRODUCTS_SERVICE_URL || 'http://localhost:8083',
+  changeOrigin: true,
+  pathRewrite: {
+    '^/kurobank/products': '/api'
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    if (req.correlationId) {
+      proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+    }
+  }
+}));
+
+app.use('/kurobank/cart/**',
+  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
+  createProxyMiddleware({
+    target: process.env.CART_SERVICE_URL || 'http://localhost:8084',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/kurobank/cart': '/api'
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.correlationId) {
+        proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+      }
+    }
+  })
+);
+
+app.use('/kurobank/orders/**',
+  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
+  createProxyMiddleware({
+    target: process.env.ORDERS_SERVICE_URL || 'http://localhost:8085',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/kurobank/orders': '/api'
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.correlationId) {
+        proxyReq.setHeader('kurobank-correlation-id', req.correlationId);
+      }
+    }
+  })
+);
+
 app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
