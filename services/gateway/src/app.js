@@ -1,19 +1,25 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
+const fs = require('fs');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const correlationId = require('../shared/middleware/correlationId');
-const errorHandler = require('../shared/middleware/errorHandler');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('js-yaml');
+const correlationId = require('../../../shared/middleware/correlationId');
+const errorHandler = require('../../../shared/middleware/errorHandler');
 const authMiddleware = require('./middleware/authMiddleware');
-const { requireRole } = require('../shared/middleware/roleMiddleware');
+const { requireRole } = require('../../../shared/middleware/roleMiddleware');
 const { authRateLimit, generalRateLimit } = require('./middleware/rateLimitMiddleware');
 const tokenRefreshService = require('./services/tokenRefreshService');
-const logger = require('../shared/utils/logger');
-const createHealthCheckHandler = require('../shared/utils/healthCheckUtility');
+const logger = require('../../../shared/utils/logger');
+const createHealthCheckHandler = require('../../../shared/utils/healthCheckUtility');
 
 dotenv.config();
 
 const healthCheckHandler = createHealthCheckHandler('gateway-service');
+
+const openApiSpec = YAML.load(fs.readFileSync(path.join(__dirname, '../openapi.yaml'), 'utf8'));
 
 const app = express();
 
@@ -28,10 +34,12 @@ app.use(express.json());
 app.use(correlationId);
 app.use(generalRateLimit);
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
+
 app.get('/actuator/health', healthCheckHandler);
 
 app.use('/public/**', createProxyMiddleware({
-  target: process.env.ACCOUNTS_SERVICE_URL,
+  target: process.env.ACCOUNTS_SERVICE_URL || 'http://localhost:8080',
   changeOrigin: true,
   pathRewrite: {
     '^/public': '/api'
@@ -164,7 +172,7 @@ app.use('/kurobank/**', authRateLimit, authMiddleware);
 app.use('/kurobank/accounts/**', 
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
-    target: process.env.ACCOUNTS_SERVICE_URL,
+    target: process.env.ACCOUNTS_SERVICE_URL || 'http://localhost:8080',
     changeOrigin: true,
     pathRewrite: {
       '^/kurobank/accounts': '/api'
@@ -180,7 +188,7 @@ app.use('/kurobank/accounts/**',
 app.use('/kurobank/cards/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
-    target: process.env.CARDS_SERVICE_URL,
+    target: process.env.CARDS_SERVICE_URL || 'http://localhost:9000',
     changeOrigin: true,
     pathRewrite: {
       '^/kurobank/cards': '/api'
@@ -196,7 +204,7 @@ app.use('/kurobank/cards/**',
 app.use('/kurobank/loans/**',
   requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
   createProxyMiddleware({
-    target: process.env.LOANS_SERVICE_URL,
+    target: process.env.LOANS_SERVICE_URL || 'http://localhost:8090',
     changeOrigin: true,
     pathRewrite: {
       '^/kurobank/loans': '/api'

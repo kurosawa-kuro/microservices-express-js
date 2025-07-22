@@ -2,12 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs');
 const OpenAPIBackend = require('openapi-backend').default;
-const correlationId = require('../shared/middleware/correlationId');
-const errorHandler = require('../shared/middleware/errorHandler');
-const bigIntSerializer = require('../shared/middleware/bigIntSerializer');
-const createOpenApiHandlers = require('../shared/middleware/openApiHandlers');
-const createCommonHandlers = require('../shared/utils/commonHandlers');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('js-yaml');
+const correlationId = require('../../../shared/middleware/correlationId');
+const errorHandler = require('../../../shared/middleware/errorHandler');
+const bigIntSerializer = require('../../../shared/middleware/bigIntSerializer');
+const createOpenApiHandlers = require('../../../shared/middleware/openApiHandlers');
+const createCommonHandlers = require('../../../shared/utils/commonHandlers');
 const controllers = require('./controllers');
 
 dotenv.config();
@@ -34,11 +37,15 @@ const api = new OpenAPIBackend({
 
 api.init();
 
+const openApiSpec = YAML.load(fs.readFileSync(path.join(__dirname, '../openapi.yaml'), 'utf8'));
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(correlationId);
 app.use(bigIntSerializer);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 // Use OpenAPI Backend to handle all requests
 app.use((req, res) => api.handleRequest(req, req, res));

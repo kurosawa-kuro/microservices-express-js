@@ -1,13 +1,13 @@
 const app = require('./src/app');
 const KafkaConsumer = require('./src/kafka/kafkaConsumer');
-const logger = require('./shared/utils/logger');
+const logger = require('../../shared/utils/logger');
 
 const PORT = process.env.PORT || 9010;
 const kafkaConsumer = new KafkaConsumer();
 
 kafkaConsumer.start().catch(error => {
   logger.error('Failed to start Kafka consumer:', error);
-  process.exit(1);
+  logger.warn('Continuing without Kafka consumer for local development');
 });
 
 const server = app.listen(PORT, () => {
