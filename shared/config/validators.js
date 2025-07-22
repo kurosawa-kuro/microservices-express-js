@@ -36,6 +36,16 @@ const authSchema = z.object({
   KEYCLOAK_CLIENT_SECRET: z.string().optional(),
 });
 
+// Payments service specific schema
+const paymentsSchema = z.object({
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  KAFKA_GROUP_ID_PAYMENTS: z.string().optional(),
+  KAFKA_TOPIC_PAYMENTS: z.string().optional(),
+  KAFKA_TOPIC_ORDERS: z.string().optional(),
+  KAFKA_TOPIC_REFUNDS: z.string().optional(),
+});
+
 // Service-specific validation schemas
 const serviceSchemas = {
   auth: baseSchema.merge(databaseSchema).merge(authSchema),
@@ -44,6 +54,7 @@ const serviceSchemas = {
   products: baseSchema.merge(databaseSchema),
   cart: baseSchema.merge(databaseSchema),
   orders: baseSchema.merge(databaseSchema),
+  payments: baseSchema.merge(databaseSchema).merge(kafkaSchema).merge(paymentsSchema),
   message: baseSchema.merge(kafkaSchema),
 };
 
@@ -109,4 +120,4 @@ module.exports = {
   validateRequiredVars,
   validateDatabaseUrl,
   serviceSchemas,
-}; 
+};  

@@ -166,7 +166,7 @@ function validateStartupConfig(serviceName, requiredVars = [], env = process.env
  * @returns {Object} Configuration for all services
  */
 function getAllServiceConfigs(env = process.env) {
-  const services = ['auth', 'users', 'gateway', 'products', 'cart', 'orders', 'message'];
+  const services = ['auth', 'users', 'gateway', 'products', 'cart', 'orders', 'payments', 'message'];
   const configs = {};
   
   for (const service of services) {
@@ -187,4 +187,4 @@ module.exports = {
   validateStartupConfig,
   getAllServiceConfigs,
   defaults
-}; 
+};  
