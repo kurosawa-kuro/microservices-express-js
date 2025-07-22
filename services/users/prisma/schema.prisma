@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["users"]
 }
 
 model User {
@@ -21,6 +23,7 @@ model User {
   updatedAt       DateTime  @updatedAt
 
   @@map("users")
+  @@schema("users")
 }
 
 model Account {
@@ -36,4 +39,5 @@ model Account {
   updatedBy       String?  @map("updated_by")
 
   @@map("accounts")
+  @@schema("users")
 }

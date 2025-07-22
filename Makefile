@@ -10,7 +10,7 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 # Environment variables
-SERVICES := auth users cards loans gateway message
+SERVICES := auth users products cart orders payments
 COMPOSE_FILE := docker-compose.yml
 
 # Installation and Setup
@@ -272,15 +272,48 @@ info: ## Show project information
 	@echo "  make test        - Run all tests"
 	@echo "  make health      - Check service health"
 
+# Schema-based Environment Commands
+dev-schema: ## Start development environment with schema separation
+	@echo "Starting development environment with schema separation..."
+	@docker compose -f docker-compose.dev.yml up -d
+	@echo "✅ Development environment with schema separation started!"
+	@echo "Check status with: docker compose -f docker-compose.dev.yml ps"
+
+test-schema: ## Start test environment with schema separation
+	@echo "Starting test environment with schema separation..."
+	@docker compose -f docker-compose.test.yml up -d
+	@echo "✅ Test environment with schema separation started!"
+	@echo "Check status with: docker compose -f docker-compose.test.yml ps"
+
+stg-schema: ## Start staging environment with schema separation
+	@echo "Starting staging environment with schema separation..."
+	@docker compose -f docker-compose.stg.yml up -d
+	@echo "✅ Staging environment with schema separation started!"
+	@echo "Check status with: docker compose -f docker-compose.stg.yml ps"
+
+prd-schema: ## Start production environment with schema separation
+	@echo "Starting production environment with schema separation..."
+	@docker compose -f docker-compose.prd.yml up -d
+	@echo "✅ Production environment with schema separation started!"
+	@echo "Check status with: docker compose -f docker-compose.prd.yml ps"
+
+down-schema: ## Stop schema-based environments
+	@echo "Stopping all schema-based environments..."
+	@docker compose -f docker-compose.dev.yml down 2>/dev/null || true
+	@docker compose -f docker-compose.test.yml down 2>/dev/null || true
+	@docker compose -f docker-compose.stg.yml down 2>/dev/null || true
+	@docker compose -f docker-compose.prd.yml down 2>/dev/null || true
+	@echo "✅ All schema-based environments stopped!"
+
 # Port Information
 ports: ## Show service port mapping
 	@echo "🌐 Service Port Mapping"
 	@echo "======================"
-	@echo "Gateway Service:    http://localhost:8072"
 	@echo "Auth Service:       http://localhost:8081"
 	@echo "Users Service:      http://localhost:8082"
-	@echo "Cards Service:      http://localhost:9000"
-	@echo "Loans Service:      http://localhost:8090"
-	@echo "Message Service:    http://localhost:9010"
-	@echo "Kafka:              localhost:9092"
-	@echo "Zookeeper:          localhost:2181"
+	@echo "Products Service:   http://localhost:8083"
+	@echo "Cart Service:       http://localhost:8084"
+	@echo "Orders Service:     http://localhost:8085"
+	@echo "Payments Service:   http://localhost:8086"
+	@echo "Keycloak:           http://localhost:8080"
+	@echo "PostgreSQL:         localhost:5432"

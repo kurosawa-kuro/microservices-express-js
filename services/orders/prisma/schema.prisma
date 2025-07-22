@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["orders"]
 }
 
 model Order {
@@ -19,6 +21,7 @@ model Order {
   orderItems  OrderItem[]
 
   @@map("orders")
+  @@schema("orders")
 }
 
 model OrderItem {
@@ -33,6 +36,7 @@ model OrderItem {
   order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
+  @@schema("orders")
 }
 
 enum OrderStatus {
@@ -43,4 +47,6 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
   RETURNED
+
+  @@schema("orders")
 }

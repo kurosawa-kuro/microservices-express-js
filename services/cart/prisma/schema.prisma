@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["cart"]
 }
 
 model CartItem {
@@ -19,4 +21,5 @@ model CartItem {
   productImage String?
 
   @@map("cart_items")
+  @@schema("cart")
 }
