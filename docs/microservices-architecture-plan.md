@@ -19,9 +19,9 @@ EC サイトの統合データベーススキーマを実装し、AI/ML 機能�
 ```prisma
 // Authentication Service Schema
 model AuthUser {
-  id              String    @id           // のsubをIDとして使用
+  id              String    @id           // KeycloakのUser IDを使用
   email           String    @unique
-  Id       String    @unique      //  User Pool IDとの紐付け
+  keycloakId     String    @unique      // Keycloak User IDとの紐付け
   emailVerified   Boolean   @default(false)
   lastLoginAt     DateTime?
   createdAt       DateTime  @default(now())
@@ -447,8 +447,7 @@ enum DisplayType {
 # ECShop実装プラン（三段階）
 
 ## 前提条件
-- **Account**（既存Banking System）と**AuthUser**（ECShop認証）の完全分離
-- Accountはbanking機能専用、AuthUserはEC機能専用として運用
+AccountはAuthとUserに分離済み
 
 ---
 
@@ -462,9 +461,10 @@ enum DisplayType {
 #### 1.1 Authentication Service (認証基盤)
 **期間**: 1-2週間
 - **AuthUser**モデル実装
-- AWS Cognito連携
+- 既存キークロークの継続利用
 - JWT トークン管理
 - ロール・権限管理（Customer/Admin）
+- **注**: AWS Cognito移行はCognitoの複雑さとセキュリティリスクを考慮して廃止
 
 #### 1.2 User Profile Service (ユーザー管理)
 **期間**: 1週間  
@@ -743,7 +743,7 @@ AIと機械学習を活用した高度な分析・パーソナライゼーショ
 - **ORM**: Prisma
 - **メッセージング**: Apache Kafka
 - **キャッシュ**: Redis
-- **認証**: AWS 
+- **認証**: Keycloak (**非Cognito**)
 - **決済**: Stripe, PayPal
 
 ### インフラストラクチャ
