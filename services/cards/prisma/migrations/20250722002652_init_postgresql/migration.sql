@@ -1,16 +1,18 @@
 -- CreateTable
 CREATE TABLE "cards" (
-    "card_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "card_id" SERIAL NOT NULL,
     "mobile_number" TEXT NOT NULL,
     "card_number" TEXT NOT NULL,
     "card_type" TEXT NOT NULL,
     "total_limit" INTEGER NOT NULL,
     "amount_used" INTEGER NOT NULL,
     "available_amount" INTEGER NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_by" TEXT NOT NULL,
-    "updated_at" DATETIME NOT NULL,
-    "updated_by" TEXT
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_by" TEXT,
+
+    CONSTRAINT "cards_pkey" PRIMARY KEY ("card_id")
 );
 
 -- CreateIndex

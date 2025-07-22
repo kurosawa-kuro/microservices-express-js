@@ -3,11 +3,11 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const OpenAPIBackend = require('openapi-backend').default;
-const correlationId = require('../../../shared/middleware/correlationId');
-const errorHandler = require('../../../shared/middleware/errorHandler');
-const bigIntSerializer = require('../../../shared/middleware/bigIntSerializer');
-const createOpenApiHandlers = require('../../../shared/middleware/openApiHandlers');
-const createCommonHandlers = require('../../../shared/utils/commonHandlers');
+const correlationId = require('../shared/middleware/correlationId');
+const errorHandler = require('../shared/middleware/errorHandler');
+const bigIntSerializer = require('../shared/middleware/bigIntSerializer');
+const createOpenApiHandlers = require('../shared/middleware/openApiHandlers');
+const createCommonHandlers = require('../shared/utils/commonHandlers');
 const controllers = require('./controllers');
 
 dotenv.config();
