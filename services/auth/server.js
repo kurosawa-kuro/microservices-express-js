@@ -1,9 +1,17 @@
 require('dotenv').config();
 const app = require('./src/app');
-const logger = require('../../shared/utils/logger');
+const { config, logger } = require('../../shared');
 
-const PORT = process.env.PORT || 8081;
+// Get service configuration
+const serviceConfig = config.getConfig('auth');
 
-app.listen(PORT, () => {
-  logger.info(`Auth service is running on port ${PORT}`);
+const PORT = serviceConfig.port;
+const HOST = serviceConfig.host;
+
+app.listen(PORT, HOST, () => {
+  logger.info(`Auth service is running on ${HOST}:${PORT}`, {
+    service: 'auth-service',
+    environment: serviceConfig.nodeEnv,
+    version: serviceConfig.service.version
+  });
 });

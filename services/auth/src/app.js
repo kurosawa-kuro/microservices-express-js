@@ -6,14 +6,33 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
-const logger = require('../../../shared/utils/logger');
-const { errorHandler } = require('../../../shared/middleware/errorHandler');
+
+// Shared utilities
+const { config, middleware, logger } = require('../../../shared');
+const { getConfig, validateStartupConfig } = config;
+const { errorHandler, correlationId, responseHelpers } = middleware;
+
+// Validate startup configuration
+try {
+  validateStartupConfig('auth', ['JWT_SECRET']);
+} catch (error) {
+  console.error('Configuration validation failed:', error.message);
+  process.exit(1);
+}
+
+// Get service configuration
+const serviceConfig = getConfig('auth');
 
 const app = express();
 
-app.use(helmet());
-app.use(cors());
+// Security middleware
+app.use(helmet(serviceConfig.security.helmet));
+app.use(cors(serviceConfig.cors));
 app.use(express.json());
+
+// Shared middleware
+app.use(correlationId);
+app.use(responseHelpers);
 
 const openApiSpec = YAML.load(fs.readFileSync(path.join(__dirname, '../openapi.yaml'), 'utf8'));
 
@@ -36,20 +55,23 @@ api.init();
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
+// Request logging middleware
 app.use((req, res, next) => {
-  req.correlationId = req.headers['cloud-shop-correlation-id'] || `auth-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  logger.info(`${req.method} ${req.path}`, { correlationId: req.correlationId });
+  logger.info(`${req.method} ${req.path}`, { 
+    correlationId: req.correlationId,
+    service: 'auth-service'
+  });
   next();
 });
 
 app.use('/cloud-shop/auth', (req, res) => api.handleRequest(req, req, res));
 
 app.get('/actuator/health', (req, res) => {
-  res.status(200).json({
+  res.standardResponse({
     status: 'UP',
     service: 'auth-service',
-    timestamp: new Date().toISOString()
-  });
+    version: serviceConfig.service.version
+  }, 200, 'Auth service is healthy');
 });
 
 app.use(errorHandler);

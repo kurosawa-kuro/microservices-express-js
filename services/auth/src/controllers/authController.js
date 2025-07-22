@@ -19,10 +19,10 @@ module.exports = {
       const token = authHeader.substring(7);
       const user = await authService.verifyToken(token);
       
-      return res.status(200).json({
+      return res.standardResponse({
         valid: true,
         user: user
-      });
+      }, 200, 'Token verification successful');
     } catch (error) {
       logger.error('Token verification failed:', { error: error.message, correlationId: req.correlationId });
       return res.status(401).json({
@@ -37,7 +37,7 @@ module.exports = {
       const { refreshToken } = c.request.requestBody;
       const tokens = await authService.refreshToken(refreshToken);
       
-      return res.status(200).json(tokens);
+      return res.standardResponse(tokens, 200, 'Token refreshed successfully');
     } catch (error) {
       logger.error('Token refresh failed:', { error: error.message, correlationId: req.correlationId });
       const errorResponse = createStandardError(401, 'UNAUTHORIZED', 'Token refresh failed', req.url);
@@ -50,9 +50,7 @@ module.exports = {
       const { token } = c.request.requestBody;
       await authService.revokeToken(token);
       
-      return res.status(200).json({
-        message: 'Token revoked successfully'
-      });
+      return res.standardResponse(null, 200, 'Token revoked successfully');
     } catch (error) {
       logger.error('Token revocation failed:', { error: error.message, correlationId: req.correlationId });
       const errorResponse = createStandardError(500, 'INTERNAL_SERVER_ERROR', 'Token revocation failed', req.url);
@@ -65,7 +63,7 @@ module.exports = {
       const { userId } = c.request.params;
       const roles = await authService.getUserRoles(userId);
       
-      return res.status(200).json({ roles });
+      return res.standardResponse({ roles }, 200, 'User roles retrieved successfully');
     } catch (error) {
       logger.error('Get user roles failed:', { error: error.message, correlationId: req.correlationId });
       const errorResponse = createStandardError(500, 'INTERNAL_SERVER_ERROR', 'Failed to get user roles', req.url);
@@ -78,9 +76,7 @@ module.exports = {
       const { userId, roleId } = c.request.requestBody;
       await authService.assignRole(userId, roleId);
       
-      return res.status(200).json({
-        message: 'Role assigned successfully'
-      });
+      return res.standardResponse(null, 200, 'Role assigned successfully');
     } catch (error) {
       logger.error('Role assignment failed:', { error: error.message, correlationId: req.correlationId });
       const errorResponse = createStandardError(500, 'INTERNAL_SERVER_ERROR', 'Role assignment failed', req.url);
@@ -93,9 +89,7 @@ module.exports = {
       const { userId, roleId } = c.request.requestBody;
       await authService.removeRole(userId, roleId);
       
-      return res.status(200).json({
-        message: 'Role removed successfully'
-      });
+      return res.standardResponse(null, 200, 'Role removed successfully');
     } catch (error) {
       logger.error('Role removal failed:', { error: error.message, correlationId: req.correlationId });
       const errorResponse = createStandardError(500, 'INTERNAL_SERVER_ERROR', 'Role removal failed', req.url);

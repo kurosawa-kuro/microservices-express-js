@@ -88,8 +88,15 @@ app.use('/cloud-shop/users/**', createProxyMiddleware({
   }
 }));
 
+// e-commerceロール定義
+const ECOMMERCE_ROLES = {
+  customer: 'customer',
+  vendor: 'vendor',
+  admin: 'admin'
+};
+
 app.use('/cloud-shop/accounts/**', 
-  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
+  requireRole([ECOMMERCE_ROLES.customer, ECOMMERCE_ROLES.admin]),
   createProxyMiddleware({
     target: process.env.USERS_SERVICE_URL || 'http://localhost:8082',
     changeOrigin: true,
@@ -119,7 +126,7 @@ app.use('/cloud-shop/products/**', createProxyMiddleware({
 }));
 
 app.use('/cloud-shop/cart/**',
-  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
+  requireRole([ECOMMERCE_ROLES.customer, ECOMMERCE_ROLES.admin]),
   createProxyMiddleware({
     target: process.env.CART_SERVICE_URL || 'http://localhost:8084',
     changeOrigin: true,
@@ -135,7 +142,7 @@ app.use('/cloud-shop/cart/**',
 );
 
 app.use('/cloud-shop/orders/**',
-  requireRole(['bank-customer', 'bank-employee', 'bank-admin']),
+  requireRole([ECOMMERCE_ROLES.customer, ECOMMERCE_ROLES.admin, ECOMMERCE_ROLES.vendor]),
   createProxyMiddleware({
     target: process.env.ORDERS_SERVICE_URL || 'http://localhost:8085',
     changeOrigin: true,
