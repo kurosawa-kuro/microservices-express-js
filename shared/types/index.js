@@ -33,31 +33,12 @@ const AccountsDto = z.object({
   communicationSw: z.boolean().optional()
 });
 
-const CardsDto = z.object({
-  mobileNumber: z.string().regex(/^[0-9]{10}$/),
-  cardNumber: z.string(),
-  cardType: z.string(),
-  totalLimit: z.number(),
-  amountUsed: z.number(),
-  availableAmount: z.number()
-});
-
-const LoansDto = z.object({
-  mobileNumber: z.string().regex(/^[0-9]{10}$/),
-  loanNumber: z.string(),
-  loanType: z.string(),
-  totalLoan: z.number(),
-  amountPaid: z.number(),
-  outstandingAmount: z.number()
-});
 
 const CustomerDetailsDto = z.object({
   name: z.string().min(5).max(30),
   email: z.string().email(),
   mobileNumber: z.string().regex(/^[0-9]{10}$/),
-  accountsDto: AccountsDto.optional(),
-  cardsDto: CardsDto.optional(),
-  loansDto: LoansDto.optional()
+  accountsDto: AccountsDto.optional()
 });
 
 module.exports = {
@@ -66,7 +47,5 @@ module.exports = {
   AccountsMsgDto,
   CustomerDto,
   AccountsDto,
-  CardsDto,
-  LoansDto,
   CustomerDetailsDto
 };
