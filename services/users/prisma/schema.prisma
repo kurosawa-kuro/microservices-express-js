@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id
+  email           String    @unique
+  displayName     String?
+  firstName       String?
+  lastName        String?
+  phoneNumber     String?
+  address         Json?
+  preferences     Json?
+  avatar          String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  accountId       Int      @id @default(autoincrement()) @map("account_id")
+  userId          String   @map("user_id")
+  accountNumber   BigInt   @unique @map("account_number")
+  accountType     String   @map("account_type")
+  branchAddress   String   @map("branch_address")
+  communicationSw Boolean  @default(false) @map("communication_sw")
+  createdAt       DateTime @default(now()) @map("created_at")
+  createdBy       String   @map("created_by")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  updatedBy       String?  @map("updated_by")
+
+  @@map("accounts")
+}

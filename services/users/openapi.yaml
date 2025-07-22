@@ -1,0 +1,345 @@
+openapi: 3.0.3
+info:
+  title: KuroBank Users Service API
+  description: User profile and account management service for KuroBank
+  version: 1.0.0
+  contact:
+    name: KuroBank Development Team
+    email: dev@kurobank.com
+
+servers:
+  - url: http://localhost:8082
+    description: Development server
+
+paths:
+  /kurobank/users:
+    post:
+      summary: Create a new user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /kurobank/users/{id}:
+    get:
+      summary: Get user by ID
+      operationId: getUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    put:
+      summary: Update user
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    delete:
+      summary: Delete user
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted successfully
+
+  /kurobank/users/mobile:
+    get:
+      summary: Get user by mobile number
+      operationId: getUserByMobile
+      parameters:
+        - name: mobileNumber
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+  /kurobank/users/{id}/details:
+    get:
+      summary: Get user details with cards and loans
+      operationId: getUserDetails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+
+  /kurobank/users/accounts:
+    post:
+      summary: Create a new account
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+    get:
+      summary: Get account by mobile number
+      operationId: getAccount
+      parameters:
+        - name: mobileNumber
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithAccounts'
+
+    put:
+      summary: Update account
+      operationId: updateAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequest'
+      responses:
+        '200':
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+    delete:
+      summary: Delete account
+      operationId: deleteAccount
+      parameters:
+        - name: mobileNumber
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account deleted successfully
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: object
+        preferences:
+          type: object
+        avatar:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateUserRequest:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: object
+        preferences:
+          type: object
+        avatar:
+          type: string
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        displayName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: object
+        preferences:
+          type: object
+        avatar:
+          type: string
+
+    Account:
+      type: object
+      properties:
+        accountId:
+          type: integer
+        userId:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        branchAddress:
+          type: string
+        communicationSw:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateAccountRequest:
+      type: object
+      required:
+        - userId
+        - accountNumber
+        - accountType
+        - branchAddress
+        - createdBy
+      properties:
+        userId:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        branchAddress:
+          type: string
+        communicationSw:
+          type: boolean
+        createdBy:
+          type: string
+
+    UpdateAccountRequest:
+      type: object
+      required:
+        - accountNumber
+      properties:
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        branchAddress:
+          type: string
+        communicationSw:
+          type: boolean
+        updatedBy:
+          type: string
+
+    UserWithAccounts:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+
+    UserDetails:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        cards:
+          type: object
+        loans:
+          type: object
