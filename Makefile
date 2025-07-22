@@ -53,25 +53,25 @@ seed-all: ## Seed databases for all services
 # Docker Management
 build: ## Build all Docker containers
 	@echo "Building all services..."
-	@docker-compose -f $(COMPOSE_FILE) build
+	@export DOCKER_BUILDKIT=0 && docker-compose -f $(COMPOSE_FILE) build
 
 build-service: ## Build specific service (usage: make build-service SERVICE=accounts)
 	@if [ -z "$(SERVICE)" ]; then echo "Usage: make build-service SERVICE=<service-name>"; exit 1; fi
 	@echo "Building $(SERVICE) service..."
-	@docker-compose -f $(COMPOSE_FILE) build $(SERVICE)-service
+	@export DOCKER_BUILDKIT=0 && docker-compose -f $(COMPOSE_FILE) build $(SERVICE)-service
 
 up: ## Start all services with Docker Compose
 	@echo "Starting all services..."
-	@docker-compose -f $(COMPOSE_FILE) up -d
+	@./scripts/start-services.sh
 
 up-logs: ## Start all services and follow logs
 	@echo "Starting all services with logs..."
-	@docker-compose -f $(COMPOSE_FILE) up
+	@export DOCKER_BUILDKIT=0 && docker-compose -f $(COMPOSE_FILE) up
 
 up-service: ## Start specific service (usage: make up-service SERVICE=accounts)
 	@if [ -z "$(SERVICE)" ]; then echo "Usage: make up-service SERVICE=<service-name>"; exit 1; fi
 	@echo "Starting $(SERVICE) service..."
-	@docker-compose -f $(COMPOSE_FILE) up -d $(SERVICE)-service
+	@export DOCKER_BUILDKIT=0 && docker-compose -f $(COMPOSE_FILE) up -d $(SERVICE)-service
 
 down: ## Stop all services
 	@echo "Stopping all services..."

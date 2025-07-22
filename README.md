@@ -75,6 +75,101 @@ docker-compose up -d
 make dev
 ```
 
+## ⚠️ 注意事項
+
+### Docker環境での既知の問題と解決策
+
+#### 1. BuildKit権限エラー
+**問題**: Docker BuildKitでの権限エラーが発生する場合
+```bash
+ERROR: failed to compute cache key: failed to calculate checksum of ref
+```
+
+**解決策**: BuildKitを無効化してビルド
+```bash
+# 環境変数でBuildKitを無効化
+export DOCKER_BUILDKIT=0
+docker-compose up -d
+
+# または直接指定
+DOCKER_BUILDKIT=0 docker-compose up -d
+```
+
+#### 2. Alpine Linuxでのlibssl依存関係問題
+**問題**: Alpine Linuxベースイメージでのlibssl関連エラー
+```bash
+Error: unable to select packages: libssl1.1 (no such package)
+```
+
+**解決策**: Dockerfileの修正または代替イメージ使用
+```bash
+# 一時的な回避策：node:18-alpineの代わりにnode:18-slim使用
+# 各サービスのDockerfileで確認・修正
+```
+
+#### 3. Keycloak初期設定の問題
+**問題**: Keycloakの初期起動時の設定エラー
+```bash
+Keycloak failed to start: Database connection failed
+```
+
+**解決策**: 
+1. PostgreSQLの起動確認
+```bash
+# PostgreSQLの状態確認
+docker-compose ps postgres
+docker-compose logs postgres
+```
+
+2. Keycloak設定の調整
+```bash
+# Keycloak設定ファイルの確認
+# docker-compose.ymlのKeycloak環境変数を確認
+```
+
+3. 手動でのKeycloak初期化
+```bash
+# Keycloakコンテナに接続して手動設定
+docker-compose exec keycloak /opt/keycloak/bin/kc.sh build
+```
+
+#### 4. ネットワーク接続の問題
+**問題**: サービス間の通信エラー
+```bash
+Connection refused: kafka:29092
+```
+
+**解決策**: ネットワークの再構築
+```bash
+# ネットワークのクリーンアップ
+docker-compose down --remove-orphans
+docker network prune -f
+docker-compose up -d
+```
+
+### 推奨起動手順
+
+```bash
+# 1. BuildKitを無効化
+export DOCKER_BUILDKIT=0
+
+# 2. 既存コンテナとネットワークをクリーンアップ
+docker-compose down --remove-orphans
+docker network prune -f
+
+# 3. インフラストラクチャサービスのみ起動
+docker-compose up -d postgres zookeeper kafka
+
+# 4. サービス起動の確認
+docker-compose ps
+
+# 5. ログの確認
+docker-compose logs -f
+
+# 6. 問題がなければ全サービス起動
+docker-compose up -d
+```
+
 ## サービス詳細
 
 ### Gateway Service (8072)
@@ -262,6 +357,86 @@ docker-compose -f docker-compose.prd.yml up -d
 
 MIT License
 
+## トラブルシューティング
+
+### よくある問題と解決策
+
+#### サービスが起動しない
+```bash
+# 1. ログの確認
+docker-compose logs [service-name]
+
+# 2. コンテナの状態確認
+docker-compose ps
+
+# 3. ネットワークの確認
+docker network ls
+docker network inspect microservices-express-js_default
+```
+
+#### データベース接続エラー
+```bash
+# 1. PostgreSQLの状態確認
+docker-compose ps postgres
+docker-compose logs postgres
+
+# 2. 接続テスト
+docker-compose exec postgres psql -U cloud-shop -d cloud_shop -c "SELECT 1;"
+
+# 3. スキーマの確認
+docker-compose exec postgres psql -U cloud-shop -d cloud_shop -c "\dn"
+```
+
+#### Kafka接続エラー
+```bash
+# 1. Kafkaの状態確認
+docker-compose ps kafka
+docker-compose logs kafka
+
+# 2. トピックの確認
+docker-compose exec kafka kafka-topics --list --bootstrap-server localhost:9092
+
+# 3. プロデューサー/コンシューマーのテスト
+docker-compose exec kafka kafka-console-producer --topic test --bootstrap-server localhost:9092
+```
+
+#### メモリ不足エラー
+```bash
+# Dockerのメモリ制限を確認・調整
+# Docker Desktop設定でメモリを4GB以上に設定
+```
+
+### デバッグ用コマンド
+
+```bash
+# 全サービスのログを確認
+docker-compose logs -f
+
+# 特定サービスのログを確認
+docker-compose logs -f [service-name]
+
+# コンテナ内でコマンド実行
+docker-compose exec [service-name] sh
+
+# ボリュームの確認
+docker volume ls
+docker volume inspect [volume-name]
+
+# イメージの確認
+docker images | grep cloud-shop
+```
+
 ## サポート
 
 Issue作成やプルリクエストは歓迎します。
+
+### 問題報告時の情報
+問題を報告する際は、以下の情報を含めてください：
+
+- **OS**: Linux/macOS/Windows
+- **Docker Version**: `docker --version`
+- **Docker Compose Version**: `docker-compose --version`
+- **Node.js Version**: `node --version`
+- **エラーログ**: 関連するログファイル
+- **実行したコマンド**: 問題が発生した際のコマンド
+- **環境変数**: 設定している環境変数（機密情報は除く）

@@ -52,7 +52,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-cloud-shop}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./scripts/create-schemas.sql:/docker-entrypoint-initdb.d/create-schemas.sql
@@ -66,19 +66,8 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: keycloak
-    command: start-dev
+    command: start-dev --db=postgres --db-url=jdbc:postgresql://postgres:5432/cloud_shop --db-username=${KC_DB_USERNAME:-cloud-shop} --db-password=${KC_DB_PASSWORD:-change_me_in_production} --hostname=localhost --hostname-port=8080 --hostname-strict=false --hostname-strict-https=false --log-level=info --metrics-enabled=true --health-enabled=true
     environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/cloud_shop?currentSchema=keycloak
-      KC_DB_USERNAME: ${KC_DB_USERNAME:-cloud-shop}
-      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-change_me_in_production}
-      KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 8080
-      KC_HOSTNAME_STRICT: false
-      KC_HOSTNAME_STRICT_HTTPS: false
-      KC_LOG_LEVEL: info
-      KC_METRICS_ENABLED: true
-      KC_HEALTH_ENABLED: true
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-change_me_in_production}
     ports:
@@ -87,10 +76,11 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # Cloud-Shop Microservices
   message-service:

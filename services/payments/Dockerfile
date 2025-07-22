@@ -1,11 +1,17 @@
-FROM node:18-alpine
+FROM node:18-slim
+
+# 必要なパッケージをインストール
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY services/orders/package*.json ./services/orders/
+COPY services/payments/package*.json ./services/payments/
 COPY shared/ ./shared/
 
-WORKDIR /app/services/orders
+WORKDIR /app/services/payments
 
 # Configure npm for better network handling
 RUN npm config set fetch-retries 5 && \
@@ -15,8 +21,8 @@ RUN npm config set fetch-retries 5 && \
 
 RUN npm ci --prefer-offline --no-audit --no-fund
 
-COPY services/orders/ .
+COPY services/payments/ .
 
-EXPOSE 8085
+EXPOSE 8086
 
 CMD ["npm", "start"]
