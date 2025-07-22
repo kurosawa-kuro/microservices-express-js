@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Infrastructure Services
   zookeeper:
@@ -213,7 +211,11 @@ services:
     build:
       context: ./services/gateway
       dockerfile: Dockerfile
+      network: host
     container_name: gateway-service
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "8072:8072"
     environment:
