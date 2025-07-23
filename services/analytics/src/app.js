@@ -19,6 +19,8 @@ const openApiSpec = YAML.load(fs.readFileSync(path.join(__dirname, '../openapi.y
 
 const api = new OpenAPIBackend({
   definition: openApiSpec,
+  strict: false,
+  validate: true,
   handlers: {
     createViewHistory: require('./controllers/analyticsController').createViewHistory,
     getViewHistory: require('./controllers/analyticsController').getViewHistory,
@@ -48,7 +50,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/analytics', (req, res) => api.handleRequest(req, req, res));
+app.use('/api/analytics', (req, res, next) => api.handleRequest(req, req, res, next));
 
 app.get('/actuator/health', (req, res) => {
   res.status(200).json({

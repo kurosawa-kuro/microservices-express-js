@@ -1,9 +1,9 @@
-const { getAnalyticsClient } = require('../../../../shared/database/prismaClient');
+const prisma = require('../prismaClient');
 const logger = require('../../../../shared/utils/logger');
 
 class AnalyticsService {
   constructor() {
-    this.prisma = getAnalyticsClient();
+    this.prisma = prisma;
   }
 
   async createViewHistory(viewHistoryDto) {

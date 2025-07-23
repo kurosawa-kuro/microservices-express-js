@@ -1,9 +1,9 @@
-const { getContentClient } = require('../../../../shared/database/prismaClient');
+const prisma = require('../prismaClient');
 const logger = require('../../../../shared/utils/logger');
 
 class ContentService {
   constructor() {
-    this.prisma = getContentClient();
+    this.prisma = prisma;
   }
 
   async createTopPageDisplay(topPageDisplayDto) {

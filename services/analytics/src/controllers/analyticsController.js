@@ -4,20 +4,28 @@ const analyticsService = new AnalyticsService();
 
 module.exports = {
   createViewHistory: async (c, req, res, next) => {
-    const viewHistoryDto = c.request.requestBody;
-    const viewHistory = await analyticsService.createViewHistory(viewHistoryDto);
-    return res.status(201).json(viewHistory);
+    try {
+      const viewHistoryDto = c.request.requestBody;
+      const viewHistory = await analyticsService.createViewHistory(viewHistoryDto);
+      return res.status(201).json(viewHistory);
+    } catch (error) {
+      next(error);
+    }
   },
 
   getViewHistory: async (c, req, res, next) => {
-    const { id } = c.request.params;
-    const viewHistory = await analyticsService.getViewHistory(id);
-    if (!viewHistory) {
-      const error = new Error('View history not found');
-      error.statusCode = 404;
-      throw error;
+    try {
+      const { id } = c.request.params;
+      const viewHistory = await analyticsService.getViewHistory(id);
+      if (!viewHistory) {
+        const error = new Error('View history not found');
+        error.statusCode = 404;
+        throw error;
+      }
+      return res.status(200).json(viewHistory);
+    } catch (error) {
+      next(error);
     }
-    return res.status(200).json(viewHistory);
   },
 
   getUserViewHistory: async (c, req, res, next) => {
@@ -28,9 +36,13 @@ module.exports = {
   },
 
   createUserActionLog: async (c, req, res, next) => {
-    const actionLogDto = c.request.requestBody;
-    const actionLog = await analyticsService.createUserActionLog(actionLogDto);
-    return res.status(201).json(actionLog);
+    try {
+      const actionLogDto = c.request.requestBody;
+      const actionLog = await analyticsService.createUserActionLog(actionLogDto);
+      return res.status(201).json(actionLog);
+    } catch (error) {
+      next(error);
+    }
   },
 
   getUserActionLogs: async (c, req, res, next) => {
