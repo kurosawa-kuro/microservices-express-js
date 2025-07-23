@@ -1,0 +1,81 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["analytics"]
+}
+
+model ViewHistory {
+  id          Int       @id @default(autoincrement())
+  userId      String
+  productId   Int
+  viewedAt    DateTime  @default(now())
+  
+  productName String?
+  productPrice Float?
+  categoryId  Int?
+  categoryName String?
+
+  @@map("view_history")
+  @@schema("analytics")
+}
+
+model UserActionLog {
+  id          Int       @id @default(autoincrement())
+  requestID   String?   
+  userId      String
+  actionType  ActionType
+  
+  productId   Int?
+  productName String?
+  productPrice Float?
+  categoryId  Int?
+  categoryName String?
+  
+  cartItemId  Int?
+  orderId     Int?
+  returnId    Int?
+  quantity    Int?
+  
+  searchKeyword   String?
+  searchCategoryId Int?
+  searchCategoryName String?
+  
+  reviewText    String?
+  rating        Float?
+  actionReason  String?
+  errorDetails  String?
+  
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+
+  @@map("user_action_logs")
+  @@schema("analytics")
+}
+
+enum ActionType {
+  CART_ADD
+  CART_REMOVE
+  CART_UPDATE
+  CART_READD
+  ORDER_COMPLETE
+  ORDER_CANCEL
+  ORDER_RETURN_REQUEST
+  ORDER_RETURN_COMPLETE
+  SEARCH_BY_KEYWORD
+  SEARCH_BY_CATEGORY
+  REVIEW_START
+  REVIEW_SUBMIT
+  USER_REGISTER_START
+  USER_REGISTER_COMPLETE
+  USER_UPDATE
+  USER_LOGIN
+  USER_LOGOUT
+  USER_DELETE
+
+  @@schema("analytics")
+}

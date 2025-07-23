@@ -157,6 +157,35 @@ app.use('/cloud-shop/orders/**',
   })
 );
 
+app.use('/cloud-shop/analytics/**',
+  requireRole([ECOMMERCE_ROLES.admin]),
+  createProxyMiddleware({
+    target: process.env.ANALYTICS_SERVICE_URL || 'http://localhost:8087',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/cloud-shop/analytics': '/api'
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.correlationId) {
+        proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
+      }
+    }
+  })
+);
+
+app.use('/cloud-shop/content/**', createProxyMiddleware({
+  target: process.env.CONTENT_SERVICE_URL || 'http://localhost:8088',
+  changeOrigin: true,
+  pathRewrite: {
+    '^/cloud-shop/content': '/api'
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    if (req.correlationId) {
+      proxyReq.setHeader('cloud-shop-correlation-id', req.correlationId);
+    }
+  }
+}));
+
 app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
