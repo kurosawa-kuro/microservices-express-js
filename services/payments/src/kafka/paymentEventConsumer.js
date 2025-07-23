@@ -1,6 +1,7 @@
 const { Kafka } = require('kafkajs');
 const logger = require('../../../../shared/utils/logger');
 const PaymentsService = require('../services/paymentsService');
+const EventIdempotencyManager = require('../../../../shared/utils/eventIdempotency');
 
 class PaymentEventConsumer {
   constructor() {
@@ -14,6 +15,10 @@ class PaymentEventConsumer {
     });
     
     this.paymentsService = new PaymentsService();
+    this.idempotencyManager = new EventIdempotencyManager({
+      serviceName: 'payments-service',
+      ttl: 3600 // 1時間
+    });
   }
 
   async start() {
@@ -33,8 +38,16 @@ class PaymentEventConsumer {
             const eventData = JSON.parse(message.value.toString());
             logger.info(`Received event from topic ${topic}:`, eventData);
 
+            // イベントの重複処理チェック
+            if (this.idempotencyManager.isEventProcessed(eventData)) {
+              logger.info(`Skipping duplicate event for order ${eventData.orderId}`);
+              return;
+            }
+
             await this.handleEvent(topic, eventData);
             
+            // 処理済みとしてマーク
+            this.idempotencyManager.markEventAsProcessed(eventData);
             logger.info(`Successfully processed event for order ${eventData.orderId}`);
           } catch (error) {
             logger.error('Error processing payment event:', error);
@@ -62,6 +75,12 @@ class PaymentEventConsumer {
 
   async handleOrderEvent(eventType, orderId, eventData) {
     try {
+      // イベントの発行元をチェックして自分自身が発行したイベントは無視
+      if (eventData.publishedBy === 'payments-service') {
+        logger.info(`Ignoring self-published order event: ${eventType}`, { orderId });
+        return;
+      }
+
       switch (eventType) {
         case 'ORDER_CREATED':
           logger.info(`Order ${orderId} created, payment processing will be triggered by order service`);
@@ -72,6 +91,11 @@ class PaymentEventConsumer {
           await this.handleOrderCancellation(orderId, eventData);
           break;
         
+        case 'ORDER_STATUS_UPDATED':
+          // ステータス更新イベントはログ出力のみで処理はしない
+          logger.info(`Order ${orderId} status updated to ${eventData.orderData?.status || 'unknown'}`);
+          break;
+          
         default:
           logger.info(`Unhandled order event: ${eventType}`);
       }

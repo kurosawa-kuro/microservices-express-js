@@ -1,6 +1,7 @@
 const { Kafka } = require('kafkajs');
 const logger = require('../../../../shared/utils/logger');
 const OrdersService = require('../services/ordersService');
+const EventIdempotencyManager = require('../../../../shared/utils/eventIdempotency');
 
 class OrderEventConsumer {
   constructor() {
@@ -14,6 +15,10 @@ class OrderEventConsumer {
     });
     
     this.ordersService = new OrdersService();
+    this.idempotencyManager = new EventIdempotencyManager({
+      serviceName: 'orders-service',
+      ttl: 3600 // 1時間
+    });
   }
 
   async start() {
@@ -35,8 +40,16 @@ class OrderEventConsumer {
             const eventData = JSON.parse(message.value.toString());
             logger.info(`Received event from topic ${topic}:`, eventData);
 
+            // イベントの重複処理チェック
+            if (this.idempotencyManager.isEventProcessed(eventData)) {
+              logger.info(`Skipping duplicate event for order ${eventData.orderId}`);
+              return;
+            }
+
             await this.handleEvent(topic, eventData);
             
+            // 処理済みとしてマーク
+            this.idempotencyManager.markEventAsProcessed(eventData);
             logger.info(`Successfully processed event for order ${eventData.orderId}`);
           } catch (error) {
             logger.error('Error processing order event:', error);
@@ -74,12 +87,12 @@ class OrderEventConsumer {
     try {
       switch (eventType) {
         case 'PAYMENT_COMPLETED':
-          await this.ordersService.updateOrderStatus(orderId, 'CONFIRMED');
+          await this.ordersService.updateOrderStatus(orderId, 'CONFIRMED', null, { fromKafkaEvent: true });
           logger.info(`Order ${orderId} confirmed after payment completion`);
           break;
         
         case 'PAYMENT_FAILED':
-          await this.ordersService.updateOrderStatus(orderId, 'CANCELLED');
+          await this.ordersService.updateOrderStatus(orderId, 'CANCELLED', null, { fromKafkaEvent: true });
           logger.info(`Order ${orderId} cancelled due to payment failure`);
           break;
         
@@ -95,12 +108,12 @@ class OrderEventConsumer {
     try {
       switch (eventType) {
         case 'INVENTORY_RESERVED':
-          await this.ordersService.updateOrderStatus(orderId, 'PROCESSING');
+          await this.ordersService.updateOrderStatus(orderId, 'PROCESSING', null, { fromKafkaEvent: true });
           logger.info(`Order ${orderId} moved to processing after inventory reservation`);
           break;
         
         case 'INVENTORY_INSUFFICIENT':
-          await this.ordersService.updateOrderStatus(orderId, 'CANCELLED');
+          await this.ordersService.updateOrderStatus(orderId, 'CANCELLED', null, { fromKafkaEvent: true });
           logger.info(`Order ${orderId} cancelled due to insufficient inventory`);
           break;
         
@@ -116,12 +129,12 @@ class OrderEventConsumer {
     try {
       switch (eventType) {
         case 'SHIPMENT_CREATED':
-          await this.ordersService.updateOrderStatus(orderId, 'SHIPPED');
+          await this.ordersService.updateOrderStatus(orderId, 'SHIPPED', null, { fromKafkaEvent: true });
           logger.info(`Order ${orderId} marked as shipped`);
           break;
         
         case 'DELIVERY_COMPLETED':
-          await this.ordersService.updateOrderStatus(orderId, 'DELIVERED');
+          await this.ordersService.updateOrderStatus(orderId, 'DELIVERED', null, { fromKafkaEvent: true });
           logger.info(`Order ${orderId} marked as delivered`);
           break;
         

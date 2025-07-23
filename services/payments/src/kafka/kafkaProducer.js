@@ -93,7 +93,15 @@ class KafkaProducer {
     }
   }
 
+  // DEPRECATED: Payments Service should not publish order events directly
+  // This method is kept for backward compatibility but should not be used
   async publishOrderEvent(eventType, orderData) {
+    logger.warn('DEPRECATED: Payments Service should not publish order events directly', {
+      eventType,
+      orderId: orderData.orderId
+    });
+    
+    // For now, we'll keep the functionality but add warning
     try {
       await this.connect();
       
@@ -107,7 +115,8 @@ class KafkaProducer {
             userId: orderData.userId,
             status: orderData.status,
             timestamp: new Date().toISOString(),
-            orderData
+            orderData,
+            publishedBy: 'payments-service' // 発行元を明記
           })
         }]
       };
@@ -115,7 +124,8 @@ class KafkaProducer {
       await this.producer.send(message);
       logger.info(`Order event published: ${eventType}`, { 
         orderId: orderData.orderId, 
-        eventType 
+        eventType,
+        publishedBy: 'payments-service'
       });
     } catch (error) {
       logger.error('Error publishing order event:', error);

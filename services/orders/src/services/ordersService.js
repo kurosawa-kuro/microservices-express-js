@@ -95,7 +95,7 @@ class OrdersService {
     }
   }
 
-  async updateOrderStatus(orderId, status, userId = null) {
+  async updateOrderStatus(orderId, status, userId = null, options = {}) {
     try {
       const validStatuses = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURNED'];
       if (!validStatuses.includes(status)) {
@@ -107,6 +107,17 @@ class OrdersService {
         where.userId = userId;
       }
 
+      // 現在のステータスを取得して重複更新を防止
+      const currentOrder = await this.prisma.order.findUnique({
+        where,
+        select: { status: true }
+      });
+
+      if (currentOrder && currentOrder.status === status) {
+        logger.info('Order status unchanged, skipping update', { orderId, status });
+        return await this.getOrder(orderId, userId);
+      }
+
       const order = await this.prisma.order.update({
         where,
         data: { status },
@@ -115,9 +126,17 @@ class OrdersService {
         }
       });
 
-      await this.kafkaProducer.publishOrderEvent('ORDER_STATUS_UPDATED', order);
+      // Kafkaイベントからの呼び出しの場合はイベント発行をスキップして循環参照を防止
+      if (!options.fromKafkaEvent && !options.skipEventPublish) {
+        await this.kafkaProducer.publishOrderEvent('ORDER_STATUS_UPDATED', order);
+      }
 
-      logger.info('Order status updated successfully', { orderId, status });
+      logger.info('Order status updated successfully', { 
+        orderId, 
+        status, 
+        fromKafkaEvent: options.fromKafkaEvent,
+        skipEventPublish: options.skipEventPublish
+      });
       return order;
     } catch (error) {
       logger.error('Error updating order status:', { error: error.message, orderId, status });
