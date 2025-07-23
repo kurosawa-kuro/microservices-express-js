@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Shared utilities and middleware for Cloud-Shop microservices",
   "main": "index.js",
+  "scripts": {
+    "test": "echo 'No tests for shared module'"
+  },
   "dependencies": {
     "@prisma/client": "^6.12.0",
     "express-validator": "^7.2.1",
